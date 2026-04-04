@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
 import { Input } from '@/components/ui/input'
 import { formatCurrency } from '@/lib/utils'
-import { SlidersHorizontal } from 'lucide-react'
+import { SlidersHorizontal, AlertTriangle } from 'lucide-react'
 
 interface Props {
   scenario: Scenario
@@ -68,7 +68,10 @@ export function InteractiveSliders({ scenario }: Props) {
   const { updateCompensation, updateLifestyle } = useScenarioStore()
   const id = scenario.id
 
-  const minutesSaved = (scenario.lifestyle.ptTimeMinutesOneWay - scenario.lifestyle.driveTimeMinutesOneWay) * 2
+  const actualMinutesSaved = (scenario.lifestyle.ptTimeMinutesOneWay - scenario.lifestyle.driveTimeMinutesOneWay) * 2
+  const drivingIsSlower = actualMinutesSaved < 0
+  // Slider value is clamped to 0+
+  const sliderValue = Math.max(0, actualMinutesSaved)
 
   return (
     <Card>
@@ -90,16 +93,25 @@ export function InteractiveSliders({ scenario }: Props) {
           suffix="/yr"
         />
 
+        {drivingIsSlower && (
+          <div className="flex items-start gap-2 rounded-md bg-hard-to-justify/5 border border-hard-to-justify/30 p-3">
+            <AlertTriangle className="h-4 w-4 text-hard-to-justify flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-hard-to-justify">
+              Driving is slower than public transport for your commute — car ownership is harder to justify on time value alone.
+            </p>
+          </div>
+        )}
+
         <SliderWithInput
           label="Minutes Saved Per Day (Driving vs PT)"
-          value={minutesSaved}
+          value={sliderValue}
           onChange={(v) => {
             // Adjust drive time to achieve the desired savings
             // savings = (ptTime - driveTime) * 2, so driveTime = ptTime - savings/2
             const newDriveTime = Math.max(0, scenario.lifestyle.ptTimeMinutesOneWay - v / 2)
             updateLifestyle(id, { driveTimeMinutesOneWay: Math.round(newDriveTime) })
           }}
-          min={-60}
+          min={0}
           max={120}
           step={1}
           formatValue={(v) => `${v} min`}

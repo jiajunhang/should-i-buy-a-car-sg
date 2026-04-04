@@ -4,8 +4,8 @@ export const DEFAULT_CAR: CarInputs = {
   name: '',
   purchasePrice: 150000,
   annualDepreciation: 15000,
-  scrapValue: 0,          // auto-computed: 150000 - 15000 * (120/12) = 0
-  coeMonthsRemaining: 120, // 10 years
+  coeYears: 10,
+  coeMonths: 0,
   fuelEconomyKmPerL: 13.0,
   annualInsurance: 3000,
   annualRoadTax: 742,
@@ -37,5 +37,5 @@ export const DEFAULT_FINANCING: FinancingInputs = {
   cashInvestmentReturnPct: 4.0,
   loanDownPayment: 50000,
   loanInterestRatePct: 2.78,
-  loanTenureMonths: 84,  // will be auto-computed from COE months
+  loanTenureMonths: 84,
 }

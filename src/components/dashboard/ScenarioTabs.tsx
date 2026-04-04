@@ -58,16 +58,18 @@ export function ScenarioTabs() {
               className="h-6 w-28 text-xs px-1 bg-transparent border-white/30"
             />
           ) : (
-            <span className="truncate max-w-[120px]">{s.name || 'Untitled'}</span>
+            <span className="truncate max-w-[120px]">{s.name || 'New Car'}</span>
           )}
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={(e) => { e.stopPropagation(); duplicateScenario(s.id) }}
-              className="p-0.5 hover:bg-white/20 rounded"
-              title="Duplicate"
-            >
-              <Copy className="h-3 w-3" />
-            </button>
+            {s.wizardStep === 'complete' && (
+              <button
+                onClick={(e) => { e.stopPropagation(); duplicateScenario(s.id) }}
+                className="p-0.5 hover:bg-white/20 rounded"
+                title="Duplicate"
+              >
+                <Copy className="h-3 w-3" />
+              </button>
+            )}
             <button
               onClick={(e) => { e.stopPropagation(); deleteScenario(s.id) }}
               className="p-0.5 hover:bg-white/20 rounded"

@@ -2,15 +2,25 @@ export interface CarInputs {
   name: string
   purchasePrice: number
   annualDepreciation: number  // primary input from sgcarmart
-  scrapValue: number          // auto-computed or manually entered
-  coeMonthsRemaining: number  // precise months remaining on COE
+  coeYears: number            // user input: years portion of COE remaining
+  coeMonths: number           // user input: months portion of COE remaining
   fuelEconomyKmPerL: number
   annualInsurance: number
   annualRoadTax: number
 }
 
+// Derived helpers (not stored)
+export function getCoeMonthsRemaining(car: CarInputs): number {
+  return car.coeYears * 12 + car.coeMonths
+}
+
+export function getScrapValue(car: CarInputs): number {
+  const tenureYears = getCoeMonthsRemaining(car) / 12
+  return Math.max(0, car.purchasePrice - car.annualDepreciation * tenureYears)
+}
+
 export interface LifestyleInputs {
-  // Commute (manual only for v2, auto-estimate deferred)
+  // Commute (manual only, auto-estimate deferred)
   driveTimeMinutesOneWay: number
   ptTimeMinutesOneWay: number
   commuteDistanceKm: number   // one-way driving distance
@@ -53,6 +63,7 @@ export interface Scenario {
   lifestyle: LifestyleInputs
   compensation: CompensationInputs
   financing: FinancingInputs
+  wizardStep: number | 'complete'   // per-scenario wizard state
   createdAt: number
 }
 
@@ -93,8 +104,8 @@ export interface FinancingComparison {
   loanInterestCostMonthly: number      // total interest / tenure months
   loanOpportunityCostMonthly: number   // returns forgone on down payment only
   // Comparison
-  cashEffectiveMonthlyCost: number     // depreciation + running + opportunity cost
-  loanEffectiveMonthlyCost: number     // depreciation + running + interest + dp opportunity cost
+  cashEffectiveMonthlyCost: number     // opportunity cost
+  loanEffectiveMonthlyCost: number     // interest + dp opportunity cost
   financingAdvantage: 'cash' | 'loan' | 'neutral'
   monthlySavings: number               // absolute difference
 }

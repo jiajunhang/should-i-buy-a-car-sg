@@ -1,3 +1,4 @@
+import type { Scenario } from '@/types/scenario'
 import { useScenarioStore } from '@/store/scenarioStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
@@ -5,11 +6,12 @@ import { Select } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { MapPin, Clock } from 'lucide-react'
 
-export function Step2Life() {
-  const { scenarios, activeScenarioId, updateLifestyle } = useScenarioStore()
-  const scenario = scenarios.find(s => s.id === activeScenarioId)
-  if (!scenario) return null
+interface Props {
+  scenario: Scenario
+}
 
+export function Step2Life({ scenario }: Props) {
+  const { updateLifestyle } = useScenarioStore()
   const { lifestyle } = scenario
   const id = scenario.id
 

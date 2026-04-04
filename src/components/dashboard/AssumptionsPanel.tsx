@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import type { Scenario } from '@/types/scenario'
+import { getCoeMonthsRemaining, getScrapValue } from '@/types/scenario'
 import { useScenarioStore } from '@/store/scenarioStore'
 import { FormField } from '@/components/ui/form-field'
+import { formatCurrency } from '@/lib/utils'
 import { ChevronDown, ChevronUp, Settings } from 'lucide-react'
 
 interface Props {
@@ -13,6 +15,9 @@ export function AssumptionsPanel({ scenario }: Props) {
   const { updateCar, updateLifestyle, updateCompensation, updateFinancing } = useScenarioStore()
   const id = scenario.id
   const { car, lifestyle, compensation, financing } = scenario
+
+  const coeMonths = getCoeMonthsRemaining(car)
+  const scrapValue = getScrapValue(car)
 
   function numUpdate(section: 'car' | 'lifestyle' | 'compensation' | 'financing', field: string, raw: string) {
     const value = raw === '' ? 0 : parseFloat(raw)
@@ -29,7 +34,7 @@ export function AssumptionsPanel({ scenario }: Props) {
       >
         <span className="flex items-center gap-2 font-semibold text-sm">
           <Settings className="h-4 w-4" />
-          Your Assumptions
+          Input Parameters
         </span>
         {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </button>
@@ -45,8 +50,21 @@ export function AssumptionsPanel({ scenario }: Props) {
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Purchase Price" value={car.purchasePrice} onChange={(v) => numUpdate('car', 'purchasePrice', v)} prefix="$" />
               <FormField label="Annual Depreciation" value={car.annualDepreciation} onChange={(v) => numUpdate('car', 'annualDepreciation', v)} prefix="$" suffix="/yr" />
-              <FormField label="Scrap Value" value={car.scrapValue} onChange={(v) => numUpdate('car', 'scrapValue', v)} prefix="$" />
-              <FormField label="COE Months" value={car.coeMonthsRemaining} onChange={(v) => numUpdate('car', 'coeMonthsRemaining', v)} suffix="months" />
+              <FormField label="COE Remaining (Years)" value={car.coeYears} onChange={(v) => numUpdate('car', 'coeYears', v)} suffix="years" min={0} max={10} />
+              <FormField label="COE Remaining (Months)" value={car.coeMonths} onChange={(v) => numUpdate('car', 'coeMonths', v)} suffix="months" min={0} max={11} />
+            </div>
+            {/* Derived read-only values */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-md bg-muted p-2.5">
+                <p className="text-xs text-muted-foreground">COE Remaining</p>
+                <p className="text-sm font-semibold">{coeMonths} months</p>
+              </div>
+              <div className="rounded-md bg-muted p-2.5">
+                <p className="text-xs text-muted-foreground">Est. Scrap Value</p>
+                <p className="text-sm font-semibold">{formatCurrency(scrapValue)}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <FormField label="Fuel Economy" value={car.fuelEconomyKmPerL} onChange={(v) => numUpdate('car', 'fuelEconomyKmPerL', v)} suffix="km/L" step={0.1} />
               <FormField label="Road Tax" value={car.annualRoadTax} onChange={(v) => numUpdate('car', 'annualRoadTax', v)} prefix="$" suffix="/yr" />
               <FormField label="Insurance" value={car.annualInsurance} onChange={(v) => numUpdate('car', 'annualInsurance', v)} prefix="$" suffix="/yr" />
@@ -56,7 +74,7 @@ export function AssumptionsPanel({ scenario }: Props) {
           {/* Commute & Costs */}
           <section className="rounded-md border bg-muted/30 p-4 space-y-3">
             <h4 className="text-sm font-bold uppercase tracking-wide text-foreground border-b pb-2 mb-3">
-              Commute & Costs
+              Commute & Lifestyle
             </h4>
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Drive Time (one-way)" value={lifestyle.driveTimeMinutesOneWay} onChange={(v) => numUpdate('lifestyle', 'driveTimeMinutesOneWay', v)} suffix="min" />
@@ -72,10 +90,10 @@ export function AssumptionsPanel({ scenario }: Props) {
             </div>
           </section>
 
-          {/* Compensation */}
+          {/* Income */}
           <section className="rounded-md border bg-muted/30 p-4 space-y-3">
             <h4 className="text-sm font-bold uppercase tracking-wide text-foreground border-b pb-2 mb-3">
-              Compensation
+              Income
             </h4>
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Annual Total Comp" value={compensation.annualTotalComp} onChange={(v) => numUpdate('compensation', 'annualTotalComp', v)} prefix="$" suffix="/yr" />

@@ -6,9 +6,8 @@ import { DEFAULT_CAR, DEFAULT_LIFESTYLE, DEFAULT_COMPENSATION, DEFAULT_FINANCING
 interface ScenarioStore {
   scenarios: Scenario[]
   activeScenarioId: string | null
-  wizardCompleted: boolean
 
-  createScenario: (name?: string) => string
+  createScenario: () => string
   duplicateScenario: (id: string) => string
   deleteScenario: (id: string) => void
   setActiveScenario: (id: string) => void
@@ -17,7 +16,7 @@ interface ScenarioStore {
   updateLifestyle: (id: string, lifestyle: Partial<LifestyleInputs>) => void
   updateCompensation: (id: string, compensation: Partial<CompensationInputs>) => void
   updateFinancing: (id: string, financing: Partial<FinancingInputs>) => void
-  completeWizard: () => void
+  setWizardStep: (id: string, step: number | 'complete') => void
   getActiveScenario: () => Scenario | undefined
 }
 
@@ -25,23 +24,26 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
 }
 
+function scenarioName(car: CarInputs): string {
+  return car.name.trim() || 'New Car'
+}
+
 export const useScenarioStore = create<ScenarioStore>()(
   persist(
     (set, get) => ({
       scenarios: [],
       activeScenarioId: null,
-      wizardCompleted: false,
 
-      createScenario: (name?: string) => {
+      createScenario: () => {
         const id = generateId()
-        const scenarioName = name || `Scenario ${get().scenarios.length + 1}`
         const newScenario: Scenario = {
           id,
-          name: scenarioName,
+          name: 'New Car',
           car: { ...DEFAULT_CAR },
           lifestyle: { ...DEFAULT_LIFESTYLE },
           compensation: { ...DEFAULT_COMPENSATION },
           financing: { ...DEFAULT_FINANCING },
+          wizardStep: 0,
           createdAt: Date.now(),
         }
         set(state => ({
@@ -59,6 +61,7 @@ export const useScenarioStore = create<ScenarioStore>()(
           ...structuredClone(source),
           id: newId,
           name: `${source.name} (copy)`,
+          wizardStep: 'complete', // duplicates skip wizard
           createdAt: Date.now(),
         }
         set(state => ({
@@ -71,16 +74,17 @@ export const useScenarioStore = create<ScenarioStore>()(
       deleteScenario: (id: string) => {
         set(state => {
           const filtered = state.scenarios.filter(s => s.id !== id)
-          // If last scenario deleted, create a fresh one
           if (filtered.length === 0) {
+            // Reset last scenario to fresh defaults + wizard step 0
             const freshId = generateId()
             const fresh: Scenario = {
               id: freshId,
-              name: 'Scenario 1',
+              name: 'New Car',
               car: { ...DEFAULT_CAR },
               lifestyle: { ...DEFAULT_LIFESTYLE },
               compensation: { ...DEFAULT_COMPENSATION },
               financing: { ...DEFAULT_FINANCING },
+              wizardStep: 0,
               createdAt: Date.now(),
             }
             return { scenarios: [fresh], activeScenarioId: freshId }
@@ -104,9 +108,11 @@ export const useScenarioStore = create<ScenarioStore>()(
 
       updateCar: (id, car) => {
         set(state => ({
-          scenarios: state.scenarios.map(s =>
-            s.id === id ? { ...s, car: { ...s.car, ...car } } : s
-          ),
+          scenarios: state.scenarios.map(s => {
+            if (s.id !== id) return s
+            const updatedCar = { ...s.car, ...car }
+            return { ...s, car: updatedCar, name: scenarioName(updatedCar) }
+          }),
         }))
       },
 
@@ -134,7 +140,13 @@ export const useScenarioStore = create<ScenarioStore>()(
         }))
       },
 
-      completeWizard: () => set({ wizardCompleted: true }),
+      setWizardStep: (id: string, step: number | 'complete') => {
+        set(state => ({
+          scenarios: state.scenarios.map(s =>
+            s.id === id ? { ...s, wizardStep: step } : s
+          ),
+        }))
+      },
 
       getActiveScenario: () => {
         const state = get()

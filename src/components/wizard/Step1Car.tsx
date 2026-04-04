@@ -1,43 +1,35 @@
+import type { Scenario } from '@/types/scenario'
+import { getScrapValue, getCoeMonthsRemaining } from '@/types/scenario'
 import { useScenarioStore } from '@/store/scenarioStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
-import { computeScrapValue, computeAnnualDepreciation } from '@/computation/carCosts'
+import { formatCurrency } from '@/lib/utils'
 import { Car } from 'lucide-react'
 
-export function Step1Car() {
-  const { scenarios, activeScenarioId, updateCar } = useScenarioStore()
-  const scenario = scenarios.find(s => s.id === activeScenarioId)
-  if (!scenario) return null
+interface Props {
+  scenario: Scenario
+}
 
+export function Step1Car({ scenario }: Props) {
+  const { updateCar } = useScenarioStore()
   const { car } = scenario
   const id = scenario.id
 
   function updateNumField(field: string, raw: string) {
     const value = raw === '' ? 0 : parseFloat(raw)
     const val = isNaN(value) ? 0 : value
-    const updates: Record<string, number> = { [field]: val }
-
-    // Bi-directional auto-fill: depreciation ↔ scrap value
-    const currentCar = { ...car, [field]: val }
-    if (field === 'annualDepreciation' || field === 'purchasePrice' || field === 'coeMonthsRemaining') {
-      if (currentCar.annualDepreciation > 0 && currentCar.coeMonthsRemaining > 0) {
-        updates.scrapValue = Math.max(0, computeScrapValue(currentCar))
-      }
-    } else if (field === 'scrapValue') {
-      if (currentCar.coeMonthsRemaining > 0) {
-        updates.annualDepreciation = Math.max(0, Math.round(computeAnnualDepreciation(currentCar)))
-      }
-    }
-
-    updateCar(id, updates)
+    updateCar(id, { [field]: val })
   }
+
+  const coeMonths = getCoeMonthsRemaining(car)
+  const scrapValue = getScrapValue(car)
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Car className="h-5 w-5" />
-          Your Car
+          Car Details
         </CardTitle>
         <CardDescription>
           Enter the car details you're considering. You can find these on the sgCarMart listing page.
@@ -70,23 +62,39 @@ export function Step1Car() {
           />
         </div>
 
+        {/* COE Remaining: years + months input */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
-            label="Scrap / PARF Value"
-            tooltip="Auto-computed from purchase price, depreciation, and COE tenure. Override if you know the exact value."
-            value={car.scrapValue}
-            onChange={(v) => updateNumField('scrapValue', v)}
-            prefix="$"
+            label="COE Remaining (Years)"
+            tooltip="Years portion of COE remaining. Found on sgCarMart as 'COE Expiry'. New cars = 10 years."
+            value={car.coeYears}
+            onChange={(v) => updateNumField('coeYears', v)}
+            suffix="years"
+            min={0}
+            max={10}
           />
           <FormField
-            label="COE Months Remaining"
-            tooltip="Months left on the COE. Found on sgCarMart as 'COE Expiry Date'. New cars = 120 months."
-            value={car.coeMonthsRemaining}
-            onChange={(v) => updateNumField('coeMonthsRemaining', v)}
+            label="COE Remaining (Months)"
+            tooltip="Months portion of COE remaining. E.g. if sgCarMart shows '5 years 8 months', enter 8 here."
+            value={car.coeMonths}
+            onChange={(v) => updateNumField('coeMonths', v)}
             suffix="months"
-            min={1}
-            max={120}
+            min={0}
+            max={11}
           />
+        </div>
+
+        {/* Derived read-only fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="rounded-md bg-muted p-3 space-y-1">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">COE Remaining</p>
+            <p className="text-sm font-semibold">{coeMonths} months</p>
+          </div>
+          <div className="rounded-md bg-muted p-3 space-y-1">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Estimated Scrap Value</p>
+            <p className="text-sm font-semibold">{formatCurrency(scrapValue)}</p>
+            <p className="text-xs text-muted-foreground">Derived from price - depreciation x tenure</p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -110,7 +118,7 @@ export function Step1Car() {
 
         <FormField
           label="Annual Insurance"
-          tooltip="Varies by car model, driver age, NCD. Get a quote from DirectAsia, FWD, or your insurer. Typical: $2k–$5k/yr."
+          tooltip="Varies by car model, driver age, NCD. Get a quote from DirectAsia, FWD, or your insurer. Typical: $2k-$5k/yr."
           value={car.annualInsurance}
           onChange={(v) => updateNumField('annualInsurance', v)}
           prefix="$"

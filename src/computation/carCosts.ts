@@ -1,18 +1,18 @@
 import type { CarInputs, LifestyleInputs, CarCostBreakdown } from '@/types/scenario'
+import { getCoeMonthsRemaining, getScrapValue } from '@/types/scenario'
 
 export function computeDepreciationMonthly(car: CarInputs): number {
   return car.annualDepreciation / 12
 }
 
+/** Derive scrap value from stored inputs */
 export function computeScrapValue(car: CarInputs): number {
-  const tenureYears = car.coeMonthsRemaining / 12
-  return car.purchasePrice - (car.annualDepreciation * tenureYears)
+  return getScrapValue(car)
 }
 
-export function computeAnnualDepreciation(car: CarInputs): number {
-  const tenureYears = car.coeMonthsRemaining / 12
-  if (tenureYears <= 0) return 0
-  return (car.purchasePrice - car.scrapValue) / tenureYears
+/** Derive COE months remaining from stored years + months */
+export function computeCoeMonths(car: CarInputs): number {
+  return getCoeMonthsRemaining(car)
 }
 
 export function computeCommuteFuelMonthly(car: CarInputs, lifestyle: LifestyleInputs): number {

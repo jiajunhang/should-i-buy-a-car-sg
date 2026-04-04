@@ -1,12 +1,11 @@
 import { useMemo } from 'react'
 import type { Scenario, FinancingComparison } from '@/types/scenario'
 import { useScenarioStore } from '@/store/scenarioStore'
-import { computeFinancingComparison, computeLoanRepaymentMonthly } from '@/computation/financing'
+import { computeFinancingComparison } from '@/computation/financing'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
 import { Input } from '@/components/ui/input'
 import { formatCurrency } from '@/lib/utils'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { Landmark, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -119,33 +118,6 @@ export function FinancingOverlay({ scenario }: Props) {
     [car, fin]
   )
 
-  // Chart: down payment vs effective monthly cost for both cash and loan
-  const chartData = useMemo(() => {
-    const points = []
-    const maxDp = car.purchasePrice
-    const dpStep = Math.max(1000, Math.round(maxDp / 40))
-    for (let dp = 0; dp <= maxDp; dp += dpStep) {
-      const loanPrincipal = Math.max(0, car.purchasePrice - dp)
-      const loanMonthly = computeLoanRepaymentMonthly(loanPrincipal, fin.loanInterestRatePct, fin.loanTenureMonths)
-      const loanTotalInterest = fin.loanTenureMonths > 0
-        ? (loanMonthly * fin.loanTenureMonths) - loanPrincipal
-        : 0
-      const loanInterestMonthly = fin.loanTenureMonths > 0 ? loanTotalInterest / fin.loanTenureMonths : 0
-      const loanDpOpportunity = dp * (fin.cashInvestmentReturnPct / 100) / 12
-
-      // Cash: opportunity cost on full purchase price (constant regardless of dp slider)
-      const avgCashCapital = (car.purchasePrice + car.scrapValue) / 2
-      const cashOpp = avgCashCapital * (fin.cashInvestmentReturnPct / 100) / 12
-
-      points.push({
-        dp: Math.round(dp / 1000),
-        cash: Math.round(cashOpp),
-        loan: Math.round(loanInterestMonthly + loanDpOpportunity),
-      })
-    }
-    return points
-  }, [car, fin])
-
   const verdictText = comparison.financingAdvantage === 'loan'
     ? `Taking a loan saves ~${formatCurrency(comparison.monthlySavings)}/mo in financing costs vs paying cash.`
     : comparison.financingAdvantage === 'cash'
@@ -214,51 +186,6 @@ export function FinancingOverlay({ scenario }: Props) {
             step={1000}
             suffix=""
           />
-        </div>
-
-        {/* Chart */}
-        <div className="pt-4 border-t">
-          <h4 className="text-sm font-semibold text-muted-foreground mb-4">
-            Down Payment vs Monthly Financing Cost
-          </h4>
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={chartData} margin={{ left: 20, right: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="dp"
-                tickFormatter={(v) => `$${v}k`}
-                label={{ value: 'Down Payment ($k)', position: 'insideBottom', offset: -5 }}
-              />
-              <YAxis
-                tickFormatter={(v) => `$${v}`}
-                label={{ value: 'Monthly Cost ($)', angle: -90, position: 'insideLeft' }}
-              />
-              <Tooltip
-                formatter={(value) => formatCurrency(Number(value)) + '/mo'}
-                labelFormatter={(v) => `Down payment: $${v}k`}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="cash"
-                name="Cash (opportunity cost)"
-                stroke="#f97316"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="loan"
-                name="Loan (interest + DP opp. cost)"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-          <p className="text-xs text-muted-foreground text-center mt-2">
-            The lower line at your chosen down payment represents the cheaper financing option.
-          </p>
         </div>
       </CardContent>
     </Card>
