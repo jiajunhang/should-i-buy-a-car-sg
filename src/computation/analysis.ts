@@ -3,20 +3,23 @@ import { computeCarCosts } from './carCosts'
 import { computePTCosts } from './ptCosts'
 import { computeTimeValue } from './timeValue'
 import { computeBreakEvenSalary } from './breakEven'
+import { computeFinancingComparison } from './financing'
 
 export function analyseScenario(scenario: Scenario): AnalysisResult {
-  const carCosts = computeCarCosts(scenario.car, scenario.lifestyle, scenario.financing)
+  const carCosts = computeCarCosts(scenario.car, scenario.lifestyle)
   const ptCosts = computePTCosts(scenario.lifestyle)
   const timeValue = computeTimeValue(scenario.lifestyle, scenario.compensation)
+  const financing = computeFinancingComparison(scenario.car, scenario.financing)
 
-  // Negative = car costs more than PT
-  const netGapWithoutTime = ptCosts.totalMonthly - carCosts.totalMonthly
+  // Use commute-only car cost for the inequality comparison
+  const netGapWithoutTime = ptCosts.totalMonthly - carCosts.totalCommuteMonthly
   const netGapWithTime = netGapWithoutTime + timeValue.timeSavingsValueMonthly
 
   const breakEvenSalary = computeBreakEvenSalary(
-    carCosts.totalMonthly,
+    carCosts.totalCommuteMonthly,
     ptCosts.totalMonthly,
-    scenario.lifestyle
+    scenario.lifestyle,
+    scenario.compensation,
   )
 
   let verdict: AnalysisResult['verdict']
@@ -32,6 +35,7 @@ export function analyseScenario(scenario: Scenario): AnalysisResult {
     carCosts,
     ptCosts,
     timeValue,
+    financing,
     netGapWithoutTime,
     netGapWithTime,
     breakEvenSalary,

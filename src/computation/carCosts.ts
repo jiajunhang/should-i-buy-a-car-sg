@@ -1,15 +1,29 @@
-import type { CarInputs, LifestyleInputs, FinancingInputs, CarCostBreakdown } from '@/types/scenario'
+import type { CarInputs, LifestyleInputs, CarCostBreakdown } from '@/types/scenario'
 
 export function computeDepreciationMonthly(car: CarInputs): number {
-  const annualDep = (car.purchasePrice - car.scrapValue) / car.coeTenureYears
-  return annualDep / 12
+  return car.annualDepreciation / 12
 }
 
-export function computeFuelMonthly(car: CarInputs, lifestyle: LifestyleInputs): number {
+export function computeScrapValue(car: CarInputs): number {
+  const tenureYears = car.coeMonthsRemaining / 12
+  return car.purchasePrice - (car.annualDepreciation * tenureYears)
+}
+
+export function computeAnnualDepreciation(car: CarInputs): number {
+  const tenureYears = car.coeMonthsRemaining / 12
+  if (tenureYears <= 0) return 0
+  return (car.purchasePrice - car.scrapValue) / tenureYears
+}
+
+export function computeCommuteFuelMonthly(car: CarInputs, lifestyle: LifestyleInputs): number {
   const commuteDays = lifestyle.workDaysPerMonth - lifestyle.wfhDaysPerMonth
   const commuteKmMonthly = lifestyle.commuteDistanceKm * 2 * commuteDays
-  const totalKmMonthly = commuteKmMonthly + lifestyle.weekendMileageKm
-  const litresMonthly = totalKmMonthly / car.fuelEconomyKmPerL
+  const litresMonthly = commuteKmMonthly / car.fuelEconomyKmPerL
+  return litresMonthly * lifestyle.petrolPricePerL
+}
+
+export function computeWeekendFuelMonthly(car: CarInputs, lifestyle: LifestyleInputs): number {
+  const litresMonthly = lifestyle.weekendMileageKm / car.fuelEconomyKmPerL
   return litresMonthly * lifestyle.petrolPricePerL
 }
 
@@ -17,61 +31,29 @@ export function computeParkingMonthly(lifestyle: LifestyleInputs): number {
   return lifestyle.hdbSeasonParkingMonthly + lifestyle.workplaceParkingMonthly
 }
 
-export function computeFinancingCostMonthly(car: CarInputs, financing: FinancingInputs): number {
-  if (financing.mode === 'loan') {
-    return computeLoanInterestMonthly(car, financing)
-  }
-  // Cash: opportunity cost of capital tied up
-  const avgCapitalTiedUp = (car.purchasePrice + car.scrapValue) / 2
-  const annualReturn = avgCapitalTiedUp * (financing.investmentReturnRatePct / 100)
-  return annualReturn / 12
-}
-
-function computeLoanInterestMonthly(car: CarInputs, financing: FinancingInputs): number {
-  const principal = car.purchasePrice - financing.downPayment
-  if (principal <= 0) return 0
-  const monthlyRate = financing.loanInterestRatePct / 100 / 12
-  const totalPayments = financing.loanTenureYears * 12
-  if (monthlyRate === 0) return 0
-  // Standard amortisation formula
-  const monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) /
-    (Math.pow(1 + monthlyRate, totalPayments) - 1)
-  // Total interest over tenure, amortised monthly
-  const totalInterest = (monthlyPayment * totalPayments) - principal
-  return totalInterest / totalPayments
-}
-
-export function computeLoanRepaymentMonthly(car: CarInputs, financing: FinancingInputs): number {
-  if (financing.mode !== 'loan') return 0
-  const principal = car.purchasePrice - financing.downPayment
-  if (principal <= 0) return 0
-  const monthlyRate = financing.loanInterestRatePct / 100 / 12
-  const totalPayments = financing.loanTenureYears * 12
-  if (monthlyRate === 0) return principal / totalPayments
-  return principal * (monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) /
-    (Math.pow(1 + monthlyRate, totalPayments) - 1)
-}
-
 export function computeCarCosts(
   car: CarInputs,
   lifestyle: LifestyleInputs,
-  financing: FinancingInputs
 ): CarCostBreakdown {
   const depreciationMonthly = computeDepreciationMonthly(car)
   const roadTaxMonthly = car.annualRoadTax / 12
   const insuranceMonthly = car.annualInsurance / 12
   const parkingMonthly = computeParkingMonthly(lifestyle)
-  const fuelMonthly = computeFuelMonthly(car, lifestyle)
-  const financingCostMonthly = computeFinancingCostMonthly(car, financing)
+  const fuelCommuteMonthly = computeCommuteFuelMonthly(car, lifestyle)
+  const fuelWeekendMonthly = computeWeekendFuelMonthly(car, lifestyle)
+
+  const totalCommuteMonthly = depreciationMonthly + roadTaxMonthly + insuranceMonthly +
+    parkingMonthly + fuelCommuteMonthly
+  const totalOwnershipMonthly = totalCommuteMonthly + fuelWeekendMonthly
 
   return {
     depreciationMonthly,
     roadTaxMonthly,
     insuranceMonthly,
     parkingMonthly,
-    fuelMonthly,
-    financingCostMonthly,
-    totalMonthly: depreciationMonthly + roadTaxMonthly + insuranceMonthly +
-      parkingMonthly + fuelMonthly + financingCostMonthly,
+    fuelCommuteMonthly,
+    fuelWeekendMonthly,
+    totalCommuteMonthly,
+    totalOwnershipMonthly,
   }
 }

@@ -4,8 +4,11 @@ export function computeCostPerMinute(compensation: CompensationInputs): number {
   if (compensation.costPerMinuteOverride !== null) {
     return compensation.costPerMinuteOverride
   }
-  // Annual comp / 12 months / 21 work days / 9 hours / 60 minutes
-  return compensation.annualTotalComp / 12 / 21 / 9 / 60
+  return compensation.annualTotalComp / 12 / compensation.hoursWorkedPerDay / 60 / 21
+}
+
+export function computeCostPerHour(compensation: CompensationInputs): number {
+  return computeCostPerMinute(compensation) * 60
 }
 
 export function computeTimeValue(
@@ -13,21 +16,22 @@ export function computeTimeValue(
   compensation: CompensationInputs
 ): TimeValueResult {
   const costPerMinute = computeCostPerMinute(compensation)
+  const costPerHour = costPerMinute * 60
   const commuteDays = lifestyle.workDaysPerMonth - lifestyle.wfhDaysPerMonth
 
-  // Daily round-trip times
   const carDailyMinutes = lifestyle.driveTimeMinutesOneWay * 2
   const ptDailyMinutes = lifestyle.ptTimeMinutesOneWay * 2
 
   const carCommuteTimeCostMonthly = carDailyMinutes * commuteDays * costPerMinute
   const ptCommuteTimeCostMonthly = ptDailyMinutes * commuteDays * costPerMinute
 
-  const timeSavingsMinutesDaily = ptDailyMinutes - carDailyMinutes // positive = car is faster
+  const timeSavingsMinutesDaily = ptDailyMinutes - carDailyMinutes
   const timeSavingsMonthly = timeSavingsMinutesDaily * commuteDays
   const timeSavingsValueMonthly = timeSavingsMonthly * costPerMinute
 
   return {
     costPerMinute,
+    costPerHour,
     carCommuteTimeCostMonthly,
     ptCommuteTimeCostMonthly,
     timeSavingsMonthly,

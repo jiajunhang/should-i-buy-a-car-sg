@@ -12,16 +12,18 @@ interface Props {
 
 export function SensitivityChart({ scenario }: Props) {
   const data = useMemo(() => {
-    const carCosts = computeCarCosts(scenario.car, scenario.lifestyle, scenario.financing)
+    const carCosts = computeCarCosts(scenario.car, scenario.lifestyle)
     const ptCosts = computePTCosts(scenario.lifestyle)
+
     const commuteDays = scenario.lifestyle.workDaysPerMonth - scenario.lifestyle.wfhDaysPerMonth
     const timeDiffMin = (scenario.lifestyle.ptTimeMinutesOneWay - scenario.lifestyle.driveTimeMinutesOneWay) * 2
+    const hoursPerDay = scenario.compensation.hoursWorkedPerDay
 
     const points = []
     for (let salary = 50000; salary <= 500000; salary += 10000) {
-      const costPerMin = salary / (12 * 21 * 9 * 60)
+      const costPerMin = salary / (12 * hoursPerDay * 60 * scenario.lifestyle.workDaysPerMonth)
       const timeSavingsValue = timeDiffMin * commuteDays * costPerMin
-      const netGap = ptCosts.totalMonthly - carCosts.totalMonthly + timeSavingsValue
+      const netGap = ptCosts.totalMonthly - carCosts.totalCommuteMonthly + timeSavingsValue
 
       points.push({
         salary: salary / 1000,

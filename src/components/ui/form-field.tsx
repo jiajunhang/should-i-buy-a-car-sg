@@ -17,6 +17,12 @@ interface FormFieldProps {
   placeholder?: string
 }
 
+// Safe display value: show 0 as "0", only show empty for null/undefined/empty string
+function displayValue(value: number | string): string | number {
+  if (value === null || value === undefined) return ''
+  return value
+}
+
 export function FormField({
   label,
   tooltip,
@@ -44,7 +50,7 @@ export function FormField({
         {prefix && <span className="text-sm text-muted-foreground">{prefix}</span>}
         <Input
           type={type}
-          value={value}
+          value={displayValue(value)}
           onChange={(e) => onChange(e.target.value)}
           min={min}
           max={max}

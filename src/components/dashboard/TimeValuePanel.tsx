@@ -20,14 +20,18 @@ export function TimeValuePanel({ timeValue, lifestyle }: Props) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Your time is worth</p>
-            <p className="text-xl font-semibold">{formatCurrencyDetailed(timeValue.costPerMinute)}/min</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Per hour</p>
+            <p className="text-lg font-semibold">{formatCurrencyDetailed(timeValue.costPerHour)}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Time saved per day</p>
-            <p className="text-xl font-semibold">{timeSavedPerDay > 0 ? '+' : ''}{timeSavedPerDay} mins</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Per minute</p>
+            <p className="text-lg font-semibold">{formatCurrencyDetailed(timeValue.costPerMinute)}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Saved/day</p>
+            <p className="text-lg font-semibold">{timeSavedPerDay > 0 ? '+' : ''}{timeSavedPerDay} min</p>
           </div>
         </div>
 

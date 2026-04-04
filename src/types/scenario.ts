@@ -1,26 +1,23 @@
 export interface CarInputs {
   name: string
   purchasePrice: number
-  scrapValue: number       // PARF rebate + scrap value at end of COE
-  coeTenureYears: number   // typically 10
-  engineCC: number         // for road tax estimation
+  annualDepreciation: number  // primary input from sgcarmart
+  scrapValue: number          // auto-computed or manually entered
+  coeMonthsRemaining: number  // precise months remaining on COE
   fuelEconomyKmPerL: number
   annualInsurance: number
   annualRoadTax: number
 }
 
 export interface LifestyleInputs {
-  commuteMode: 'manual' | 'auto'
-  // Manual mode
+  // Commute (manual only for v2, auto-estimate deferred)
   driveTimeMinutesOneWay: number
   ptTimeMinutesOneWay: number
-  commuteDistanceKm: number   // one-way
-  // Auto mode
-  homePostalCode: string
-  workPostalCode: string
-  // Shared
+  commuteDistanceKm: number   // one-way driving distance
+  // Work schedule
   workDaysPerMonth: number    // default 21
   wfhDaysPerMonth: number     // default 0
+  // Weekend mileage (excluded from comparison, shown for budgeting)
   weekendMileageKm: number    // per month
   // Parking
   hdbSeasonParkingMonthly: number
@@ -29,25 +26,24 @@ export interface LifestyleInputs {
   petrolPricePerL: number     // default RON95 ~3.40
   // PT costs
   mrtDailyCost: number        // default ~4.30
-  grabCostPerTrip: number     // default ~80
+  grabCostPerTrip: number     // default ~25
   ptMode: 'mrt' | 'grab' | 'mixed'
   grabTripsPerMonth: number   // for mixed mode
 }
 
 export interface CompensationInputs {
   annualTotalComp: number
-  // Derived but overridable
+  hoursWorkedPerDay: number   // default 9
   costPerMinuteOverride: number | null
 }
 
 export interface FinancingInputs {
-  mode: 'cash' | 'loan'
-  // Loan specifics
-  downPayment: number
-  loanInterestRatePct: number  // annual percentage
-  loanTenureYears: number
-  // Opportunity cost (cash mode)
-  investmentReturnRatePct: number // annual percentage, default ~4%
+  // Cash scenario
+  cashInvestmentReturnPct: number   // default 4.0%
+  // Loan scenario
+  loanDownPayment: number
+  loanInterestRatePct: number       // default 2.78%
+  loanTenureMonths: number          // auto: min(coeMonthsRemaining, 84)
 }
 
 export interface Scenario {
@@ -65,9 +61,10 @@ export interface CarCostBreakdown {
   roadTaxMonthly: number
   insuranceMonthly: number
   parkingMonthly: number
-  fuelMonthly: number
-  financingCostMonthly: number  // interest (loan) or opportunity cost (cash)
-  totalMonthly: number
+  fuelCommuteMonthly: number      // commute fuel only (used in comparison)
+  fuelWeekendMonthly: number      // weekend fuel (budgeting only)
+  totalCommuteMonthly: number     // used in inequality comparison
+  totalOwnershipMonthly: number   // includes weekend fuel (for budgeting)
 }
 
 export interface PTCostBreakdown {
@@ -78,18 +75,37 @@ export interface PTCostBreakdown {
 
 export interface TimeValueResult {
   costPerMinute: number
+  costPerHour: number
   carCommuteTimeCostMonthly: number
   ptCommuteTimeCostMonthly: number
-  timeSavingsMonthly: number   // positive = car saves time
+  timeSavingsMonthly: number       // positive = car saves time (minutes)
   timeSavingsValueMonthly: number
+}
+
+export interface FinancingComparison {
+  // Cash scenario
+  cashUpfront: number
+  cashOpportunityCostMonthly: number   // returns forgone on full purchase price
+  // Loan scenario
+  loanUpfront: number                  // down payment
+  loanMonthlyRepayment: number
+  loanTotalInterest: number
+  loanInterestCostMonthly: number      // total interest / tenure months
+  loanOpportunityCostMonthly: number   // returns forgone on down payment only
+  // Comparison
+  cashEffectiveMonthlyCost: number     // depreciation + running + opportunity cost
+  loanEffectiveMonthlyCost: number     // depreciation + running + interest + dp opportunity cost
+  financingAdvantage: 'cash' | 'loan' | 'neutral'
+  monthlySavings: number               // absolute difference
 }
 
 export interface AnalysisResult {
   carCosts: CarCostBreakdown
   ptCosts: PTCostBreakdown
   timeValue: TimeValueResult
-  netGapWithoutTime: number     // car - PT (negative means car costs more)
+  financing: FinancingComparison
+  netGapWithoutTime: number     // PT - car commute costs (negative = car costs more)
   netGapWithTime: number        // above + time savings value
-  breakEvenSalary: number | null // null if car is always cheaper or never sensible
+  breakEvenSalary: number | null
   verdict: 'sensible' | 'borderline' | 'hard-to-justify'
 }

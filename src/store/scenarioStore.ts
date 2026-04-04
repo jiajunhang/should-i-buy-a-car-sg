@@ -8,11 +8,11 @@ interface ScenarioStore {
   activeScenarioId: string | null
   wizardCompleted: boolean
 
-  // Actions
   createScenario: (name?: string) => string
   duplicateScenario: (id: string) => string
   deleteScenario: (id: string) => void
   setActiveScenario: (id: string) => void
+  renameScenario: (id: string, name: string) => void
   updateCar: (id: string, car: Partial<CarInputs>) => void
   updateLifestyle: (id: string, lifestyle: Partial<LifestyleInputs>) => void
   updateCompensation: (id: string, compensation: Partial<CompensationInputs>) => void
@@ -71,6 +71,20 @@ export const useScenarioStore = create<ScenarioStore>()(
       deleteScenario: (id: string) => {
         set(state => {
           const filtered = state.scenarios.filter(s => s.id !== id)
+          // If last scenario deleted, create a fresh one
+          if (filtered.length === 0) {
+            const freshId = generateId()
+            const fresh: Scenario = {
+              id: freshId,
+              name: 'Scenario 1',
+              car: { ...DEFAULT_CAR },
+              lifestyle: { ...DEFAULT_LIFESTYLE },
+              compensation: { ...DEFAULT_COMPENSATION },
+              financing: { ...DEFAULT_FINANCING },
+              createdAt: Date.now(),
+            }
+            return { scenarios: [fresh], activeScenarioId: freshId }
+          }
           const newActive = state.activeScenarioId === id
             ? (filtered[0]?.id ?? null)
             : state.activeScenarioId
@@ -79,6 +93,14 @@ export const useScenarioStore = create<ScenarioStore>()(
       },
 
       setActiveScenario: (id: string) => set({ activeScenarioId: id }),
+
+      renameScenario: (id: string, name: string) => {
+        set(state => ({
+          scenarios: state.scenarios.map(s =>
+            s.id === id ? { ...s, name } : s
+          ),
+        }))
+      },
 
       updateCar: (id, car) => {
         set(state => ({

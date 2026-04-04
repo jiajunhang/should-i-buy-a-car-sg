@@ -1,10 +1,8 @@
 import { useScenarioStore } from '@/store/scenarioStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
-import { Label } from '@/components/ui/label'
-import { Select } from '@/components/ui/select'
-import { DollarSign } from 'lucide-react'
-import { computeCostPerMinute } from '@/computation/timeValue'
+import { DollarSign, Landmark } from 'lucide-react'
+import { computeCostPerMinute, computeCostPerHour } from '@/computation/timeValue'
 import { formatCurrencyDetailed } from '@/lib/utils'
 
 export function Step3Comp() {
@@ -12,10 +10,14 @@ export function Step3Comp() {
   const scenario = scenarios.find(s => s.id === activeScenarioId)
   if (!scenario) return null
 
-  const { compensation, financing } = scenario
+  const { compensation, financing, car } = scenario
   const id = scenario.id
 
   const costPerMin = computeCostPerMinute(compensation)
+  const costPerHour = computeCostPerHour(compensation)
+
+  // Auto-compute loan tenure from COE months (capped at 84)
+  const maxLoanMonths = Math.min(car.coeMonthsRemaining, 84)
 
   return (
     <div className="space-y-6">
@@ -26,14 +28,14 @@ export function Step3Comp() {
             Your Compensation
           </CardTitle>
           <CardDescription>
-            Your annual total compensation powers the time-value calculation — the key insight most people miss.
+            Your compensation powers the time-value calculation — the key insight most people miss when evaluating car ownership.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <FormField
             label="Annual Total Compensation"
             tooltip="Base salary + bonus + stock + any other cash compensation, before tax."
-            value={compensation.annualTotalComp || ''}
+            value={compensation.annualTotalComp}
             onChange={(v) => {
               const val = v === '' ? 0 : parseFloat(v)
               updateCompensation(id, { annualTotalComp: isNaN(val) ? 0 : val })
@@ -42,9 +44,26 @@ export function Step3Comp() {
             suffix="/yr"
           />
 
-          <div className="rounded-md bg-muted p-4 text-sm">
+          <FormField
+            label="Average Hours Worked Per Day"
+            tooltip="Affects how your time is valued. Default is 9 hours (typical office day including lunch)."
+            value={compensation.hoursWorkedPerDay}
+            onChange={(v) => {
+              const val = v === '' ? 0 : parseFloat(v)
+              updateCompensation(id, { hoursWorkedPerDay: isNaN(val) ? 0 : val })
+            }}
+            suffix="hrs/day"
+            step={0.5}
+            min={1}
+            max={16}
+          />
+
+          <div className="rounded-md bg-muted p-4 text-sm space-y-1">
             <p className="text-muted-foreground">
-              Your time is worth <span className="font-semibold text-foreground">{formatCurrencyDetailed(costPerMin)}/min</span>.
+              Your time is worth <span className="font-semibold text-foreground">{formatCurrencyDetailed(costPerHour)}/hr</span>
+              {' '}(<span className="font-semibold text-foreground">{formatCurrencyDetailed(costPerMin)}/min</span>).
+            </p>
+            <p className="text-muted-foreground text-xs">
               Every minute saved on your commute has real economic value.
             </p>
           </div>
@@ -53,39 +72,54 @@ export function Step3Comp() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Financing</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Landmark className="h-5 w-5" />
+            Financing Details
+          </CardTitle>
           <CardDescription>
-            How are you paying for the car? This affects cash flow analysis but not the core economic cost.
+            We'll compare both financing options on the dashboard. Fill in details for each scenario.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Payment method</Label>
-            <Select
-              value={financing.mode}
-              onChange={(e) => updateFinancing(id, { mode: e.target.value as 'cash' | 'loan' })}
-            >
-              <option value="cash">Full cash payment</option>
-              <option value="loan">Bank loan</option>
-            </Select>
-          </div>
+        <CardContent className="space-y-6">
+          {/* Cash section */}
+          <section className="space-y-3">
+            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">If paying full cash</h4>
+            <FormField
+              label="Expected Investment Return"
+              tooltip="If you didn't buy the car, what return could you earn? CPF OA: ~2.5%, SSB: ~3%, ETFs: ~4-7%."
+              value={financing.cashInvestmentReturnPct}
+              onChange={(v) => {
+                const val = v === '' ? 0 : parseFloat(v)
+                updateFinancing(id, { cashInvestmentReturnPct: isNaN(val) ? 0 : val })
+              }}
+              suffix="% p.a."
+              step={0.1}
+            />
+            <p className="text-xs text-muted-foreground">
+              This represents the opportunity cost — returns you forgo by spending cash on a car instead of investing it.
+            </p>
+          </section>
 
-          {financing.mode === 'loan' ? (
+          <div className="border-t" />
+
+          {/* Loan section */}
+          <section className="space-y-3">
+            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">If taking a bank loan</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 label="Down Payment"
                 tooltip="MAS rules: minimum 30% for OMV ≤ $20k, 40% for OMV > $20k."
-                value={financing.downPayment || ''}
+                value={financing.loanDownPayment}
                 onChange={(v) => {
                   const val = v === '' ? 0 : parseFloat(v)
-                  updateFinancing(id, { downPayment: isNaN(val) ? 0 : val })
+                  updateFinancing(id, { loanDownPayment: isNaN(val) ? 0 : val })
                 }}
                 prefix="$"
               />
               <FormField
                 label="Loan Interest Rate"
                 tooltip="Typical Singapore car loan rates: 2.5%–3.5% p.a."
-                value={financing.loanInterestRatePct || ''}
+                value={financing.loanInterestRatePct}
                 onChange={(v) => {
                   const val = v === '' ? 0 : parseFloat(v)
                   updateFinancing(id, { loanInterestRatePct: isNaN(val) ? 0 : val })
@@ -93,37 +127,22 @@ export function Step3Comp() {
                 suffix="% p.a."
                 step={0.01}
               />
-              <FormField
-                label="Loan Tenure"
-                tooltip="Maximum 7 years in Singapore."
-                value={financing.loanTenureYears || ''}
-                onChange={(v) => {
-                  const val = v === '' ? 0 : parseFloat(v)
-                  updateFinancing(id, { loanTenureYears: isNaN(val) ? 0 : val })
-                }}
-                suffix="years"
-                max={7}
-              />
             </div>
-          ) : (
-            <div className="space-y-4">
-              <FormField
-                label="Expected Investment Return"
-                tooltip="If you didn't buy the car, what return could you earn? CPF OA: ~2.5%, SSB: ~3%, ETFs: ~4-7%."
-                value={financing.investmentReturnRatePct || ''}
-                onChange={(v) => {
-                  const val = v === '' ? 0 : parseFloat(v)
-                  updateFinancing(id, { investmentReturnRatePct: isNaN(val) ? 0 : val })
-                }}
-                suffix="% p.a."
-                step={0.1}
-              />
-              <div className="rounded-md bg-muted p-4 text-sm text-muted-foreground">
-                This represents the opportunity cost of your capital — the returns you forgo by spending
-                the money on a car instead of investing it.
-              </div>
-            </div>
-          )}
+            <FormField
+              label="Loan Tenure"
+              tooltip={`Auto-set to ${maxLoanMonths} months (lesser of COE remaining or 84 months / 7 years). Override if needed.`}
+              value={financing.loanTenureMonths}
+              onChange={(v) => {
+                const val = v === '' ? 0 : parseFloat(v)
+                updateFinancing(id, { loanTenureMonths: isNaN(val) ? 0 : Math.round(val) })
+              }}
+              suffix="months"
+              max={maxLoanMonths}
+            />
+            <p className="text-xs text-muted-foreground">
+              Max loan tenure in Singapore: lesser of 7 years (84 months) or remaining COE ({car.coeMonthsRemaining} months).
+            </p>
+          </section>
         </CardContent>
       </Card>
     </div>

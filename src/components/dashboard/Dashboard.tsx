@@ -10,6 +10,7 @@ import { BreakEvenCallout } from './BreakEvenCallout'
 import { TimeValuePanel } from './TimeValuePanel'
 import { InteractiveSliders } from './InteractiveSliders'
 import { SensitivityChart } from './SensitivityChart'
+import { FinancingOverlay } from './FinancingOverlay'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 
@@ -17,7 +18,6 @@ export function Dashboard() {
   const navigate = useNavigate()
   const { scenarios, activeScenarioId, wizardCompleted } = useScenarioStore()
 
-  // Redirect to wizard if not completed
   if (!wizardCompleted || scenarios.length === 0) {
     navigate('/wizard')
     return null
@@ -68,6 +68,9 @@ export function Dashboard() {
 
           {/* Sensitivity chart */}
           <SensitivityChart scenario={scenario} />
+
+          {/* Financing analysis */}
+          <FinancingOverlay scenario={scenario} />
         </div>
       </div>
     </div>
