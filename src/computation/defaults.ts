@@ -9,15 +9,16 @@ export const DEFAULT_CAR: CarInputs = {
   fuelEconomyKmPerL: 13.0,
   annualInsurance: 3000,
   annualRoadTax: 700,
+  erpCashcardMonthly: 50,
+  annualMaintenance: 1200,
 }
 
 export const DEFAULT_LIFESTYLE: LifestyleInputs = {
-  driveTimeMinutesOneWay: 30,
-  ptTimeMinutesOneWay: 60,
-  commuteDistanceKm: 20,
-  workDaysPerMonth: 21,
-  wfhDaysPerMonth: 0,
-  hdbSeasonParkingMonthly: 110,
+  driveTimeMinutesDaily: 60,
+  ptTimeMinutesDaily: 120,
+  commuteDistanceKmDaily: 40,
+  commuteDaysPerMonth: 21,
+  residentialParkingMonthly: 110,
   workplaceParkingMonthly: 200,
   petrolPricePerL: 3.00,
   ptDailyCost: 5,

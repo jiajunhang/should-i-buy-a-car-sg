@@ -50,18 +50,18 @@ describe('analyseScenario', () => {
     expect(result.verdict).toBe('sensible')
   })
 
-  it('netGapWithoutTime is PT cost minus car commute cost', () => {
+  it('netGapWithoutTime is PT cost minus car total cost', () => {
     const result = analyseScenario(makeScenario())
     expect(result.netGapWithoutTime).toBeCloseTo(
       result.ptCosts.totalMonthly - result.carCosts.totalMonthly
     )
   })
 
-  it('higher WFH reduces time value advantage', () => {
+  it('fewer commute days reduces time value advantage', () => {
     const base = analyseScenario(makeScenario())
-    const wfh = analyseScenario(makeScenario({
-      lifestyle: { ...DEFAULT_LIFESTYLE, wfhDaysPerMonth: 15 },
+    const fewer = analyseScenario(makeScenario({
+      lifestyle: { ...DEFAULT_LIFESTYLE, commuteDaysPerMonth: 10 },
     }))
-    expect(wfh.timeValue.timeSavingsValueMonthly).toBeLessThan(base.timeValue.timeSavingsValueMonthly)
+    expect(fewer.timeValue.timeSavingsValueMonthly).toBeLessThan(base.timeValue.timeSavingsValueMonthly)
   })
 })

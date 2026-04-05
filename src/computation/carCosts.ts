@@ -16,14 +16,13 @@ export function computeCoeMonths(car: CarInputs): number {
 }
 
 export function computeCommuteFuelMonthly(car: CarInputs, lifestyle: LifestyleInputs): number {
-  const commuteDays = lifestyle.workDaysPerMonth - lifestyle.wfhDaysPerMonth
-  const commuteKmMonthly = lifestyle.commuteDistanceKm * 2 * commuteDays
+  const commuteKmMonthly = lifestyle.commuteDistanceKmDaily * lifestyle.commuteDaysPerMonth
   const litresMonthly = commuteKmMonthly / car.fuelEconomyKmPerL
   return litresMonthly * lifestyle.petrolPricePerL
 }
 
 export function computeParkingMonthly(lifestyle: LifestyleInputs): number {
-  return lifestyle.hdbSeasonParkingMonthly + lifestyle.workplaceParkingMonthly
+  return lifestyle.residentialParkingMonthly + lifestyle.workplaceParkingMonthly
 }
 
 export function computeCarCosts(
@@ -35,9 +34,11 @@ export function computeCarCosts(
   const insuranceMonthly = car.annualInsurance / 12
   const parkingMonthly = computeParkingMonthly(lifestyle)
   const fuelCommuteMonthly = computeCommuteFuelMonthly(car, lifestyle)
+  const erpCashcardMonthly = car.erpCashcardMonthly
+  const maintenanceMonthly = car.annualMaintenance / 12
 
   const totalMonthly = depreciationMonthly + roadTaxMonthly + insuranceMonthly +
-    parkingMonthly + fuelCommuteMonthly
+    parkingMonthly + fuelCommuteMonthly + erpCashcardMonthly + maintenanceMonthly
 
   return {
     depreciationMonthly,
@@ -45,6 +46,8 @@ export function computeCarCosts(
     insuranceMonthly,
     parkingMonthly,
     fuelCommuteMonthly,
+    erpCashcardMonthly,
+    maintenanceMonthly,
     totalMonthly,
   }
 }

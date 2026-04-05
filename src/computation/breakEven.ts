@@ -4,12 +4,12 @@ import type { LifestyleInputs, CompensationInputs } from '@/types/scenario'
  * Solve for the annual salary at which:
  *   carCostMonthly + carTimeCost = ptCostMonthly + ptTimeCost
  *
- * Time cost = commuteMinutes × commuteDays × costPerMinute
- * costPerMinute = salary / (12 × hoursPerDay × 60 × workDays)
+ * Time cost = dailyMinutes × commuteDays × costPerMinute
+ * costPerMinute = salary / (12 × hoursPerDay × 60 × 21)
  *
- * Let K = 1 / (12 × hoursPerDay × 60 × workDays)
+ * Let K = 1 / (12 × hoursPerDay × 60 × 21)
  * Let D = commuteDays per month
- * Let Tc = car round-trip minutes, Tp = PT round-trip minutes
+ * Let Tc = car daily minutes, Tp = PT daily minutes
  *
  * salary = (carCost - ptCost) / (K × D × (Tp - Tc))
  *
@@ -21,17 +21,18 @@ export function computeBreakEvenSalary(
   lifestyle: LifestyleInputs,
   compensation: CompensationInputs,
 ): number | null {
-  const commuteDays = lifestyle.workDaysPerMonth - lifestyle.wfhDaysPerMonth
-  const carRoundTripMin = lifestyle.driveTimeMinutesOneWay * 2
-  const ptRoundTripMin = lifestyle.ptTimeMinutesOneWay * 2
-  const timeDiffMin = ptRoundTripMin - carRoundTripMin
+  const commuteDays = lifestyle.commuteDaysPerMonth
+  const carDailyMin = lifestyle.driveTimeMinutesDaily
+  const ptDailyMin = lifestyle.ptTimeMinutesDaily
+  const timeDiffMin = ptDailyMin - carDailyMin
 
   const costGap = carCostMonthly - ptCostMonthly
 
   if (costGap <= 0) return null   // Car is already cheaper
   if (timeDiffMin <= 0) return null // Car doesn't save time
 
-  const K = 1 / (12 * compensation.hoursWorkedPerDay * 60 * lifestyle.workDaysPerMonth)
+  // K uses 21 (standard work days) to match costPerMinute formula
+  const K = 1 / (12 * compensation.hoursWorkedPerDay * 60 * 21)
   const salary = costGap / (K * commuteDays * timeDiffMin)
 
   if (salary > 2_000_000) return null

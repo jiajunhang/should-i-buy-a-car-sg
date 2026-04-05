@@ -53,7 +53,7 @@ export function InteractiveSliders({ scenario }: Props) {
   const { updateCompensation, updateLifestyle } = useScenarioStore()
   const id = scenario.id
 
-  const actualMinutesSaved = (scenario.lifestyle.ptTimeMinutesOneWay - scenario.lifestyle.driveTimeMinutesOneWay) * 2
+  const actualMinutesSaved = scenario.lifestyle.ptTimeMinutesDaily - scenario.lifestyle.driveTimeMinutesDaily
   const drivingIsSlower = actualMinutesSaved < 0
   const sliderValue = Math.max(0, actualMinutesSaved)
 
@@ -87,12 +87,12 @@ export function InteractiveSliders({ scenario }: Props) {
         )}
 
         <SliderControl
-          label="Minutes Saved Per Day (Driving vs PT)"
+          label="Minutes Saved Per Day (Driving vs Public Transport)"
           value={sliderValue}
           displayValue={`${sliderValue} min`}
           onChange={(v) => {
-            const newDriveTime = Math.max(0, scenario.lifestyle.ptTimeMinutesOneWay - v / 2)
-            updateLifestyle(id, { driveTimeMinutesOneWay: Math.round(newDriveTime) })
+            const newDriveTime = Math.max(0, scenario.lifestyle.ptTimeMinutesDaily - v)
+            updateLifestyle(id, { driveTimeMinutesDaily: Math.round(newDriveTime) })
           }}
           min={0}
           max={120}
@@ -101,12 +101,12 @@ export function InteractiveSliders({ scenario }: Props) {
         />
 
         <SliderControl
-          label="WFH Days per Month"
-          value={scenario.lifestyle.wfhDaysPerMonth}
-          displayValue={`${scenario.lifestyle.wfhDaysPerMonth} days`}
-          onChange={(v) => updateLifestyle(id, { wfhDaysPerMonth: v })}
+          label="Days You Commute per Month"
+          value={scenario.lifestyle.commuteDaysPerMonth}
+          displayValue={`${scenario.lifestyle.commuteDaysPerMonth} days`}
+          onChange={(v) => updateLifestyle(id, { commuteDaysPerMonth: v })}
           min={0}
-          max={scenario.lifestyle.workDaysPerMonth}
+          max={31}
           step={1}
           formatBound={(v) => `${v} days`}
         />

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import type { Scenario } from '@/types/scenario'
+import { useScenarioStore } from '@/store/scenarioStore'
 import { analyseScenario } from '@/computation/analysis'
 import { AssumptionsPanel } from './AssumptionsPanel'
 import { InequalityVerdict } from './InequalityVerdict'
@@ -10,7 +11,7 @@ import { InteractiveSliders } from './InteractiveSliders'
 import { SensitivityChart } from './SensitivityChart'
 import { FinancingOverlay } from './FinancingOverlay'
 import { Button } from '@/components/ui/button'
-import { Printer } from 'lucide-react'
+import { Printer, Pencil } from 'lucide-react'
 
 interface Props {
   scenario: Scenario
@@ -18,11 +19,20 @@ interface Props {
 
 export function Dashboard({ scenario }: Props) {
   const analysis = useMemo(() => analyseScenario(scenario), [scenario])
+  const { setWizardStep } = useScenarioStore()
 
   return (
     <div className="space-y-6">
-      {/* Export button */}
-      <div className="flex justify-end" data-print-hide>
+      {/* Action buttons */}
+      <div className="flex justify-end gap-2" data-print-hide>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setWizardStep(scenario.id, 0)}
+        >
+          <Pencil className="h-4 w-4 mr-2" />
+          Edit Inputs
+        </Button>
         <Button
           variant="outline"
           size="sm"
@@ -47,17 +57,20 @@ export function Dashboard({ scenario }: Props) {
       {/* Break-even + Time value side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <BreakEvenCallout analysis={analysis} />
-        <TimeValuePanel timeValue={analysis.timeValue} lifestyle={scenario.lifestyle} />
+        <TimeValuePanel
+          timeValue={analysis.timeValue}
+          lifestyle={scenario.lifestyle}
+        />
       </div>
-
-      {/* Cost breakdown charts */}
-      <CostBreakdownChart carCosts={analysis.carCosts} ptCosts={analysis.ptCosts} />
 
       {/* Sensitivity chart */}
       <SensitivityChart scenario={scenario} />
 
       {/* Financing analysis */}
       <FinancingOverlay scenario={scenario} />
+
+      {/* Cost breakdown charts */}
+      <CostBreakdownChart carCosts={analysis.carCosts} ptCosts={analysis.ptCosts} />
     </div>
   )
 }

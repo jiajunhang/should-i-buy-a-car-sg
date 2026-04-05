@@ -9,7 +9,6 @@ interface ScenarioStore {
   activeScenarioId: string | null
 
   createScenario: () => string
-  duplicateScenario: (id: string) => string
   deleteScenario: (id: string) => void
   setActiveScenario: (id: string) => void
   renameScenario: (id: string, name: string) => void
@@ -52,24 +51,6 @@ export const useScenarioStore = create<ScenarioStore>()(
           activeScenarioId: id,
         }))
         return id
-      },
-
-      duplicateScenario: (id: string) => {
-        const source = get().scenarios.find(s => s.id === id)
-        if (!source) return id
-        const newId = generateId()
-        const duplicate: Scenario = {
-          ...structuredClone(source),
-          id: newId,
-          name: `${source.name} (copy)`,
-          wizardStep: 'complete', // duplicates skip wizard
-          createdAt: Date.now(),
-        }
-        set(state => ({
-          scenarios: [...state.scenarios, duplicate],
-          activeScenarioId: newId,
-        }))
-        return newId
       },
 
       deleteScenario: (id: string) => {

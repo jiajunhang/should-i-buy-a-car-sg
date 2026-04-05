@@ -46,31 +46,29 @@ describe('computeCoeMonths', () => {
 
 describe('computeCommuteFuelMonthly', () => {
   it('computes fuel for default scenario', () => {
-    // commuteDays = 21 - 0 = 21
-    // commuteKm = 20 * 2 * 21 = 840
+    // commuteKm = 40 * 21 = 840
     // litres = 840 / 13 = 64.615...
     // cost = 64.615 * 3.00 = 193.85
     const result = computeCommuteFuelMonthly(car, lifestyle)
     expect(result).toBeCloseTo(193.85, 1)
   })
 
-  it('reduces with WFH days', () => {
-    const wfh = { ...lifestyle, wfhDaysPerMonth: 10 }
+  it('reduces with fewer commute days', () => {
+    const fewer = { ...lifestyle, commuteDaysPerMonth: 11 }
     const base = computeCommuteFuelMonthly(car, lifestyle)
-    const reduced = computeCommuteFuelMonthly(car, wfh)
+    const reduced = computeCommuteFuelMonthly(car, fewer)
     expect(reduced).toBeLessThan(base)
-    // commuteDays = 21 - 10 = 11
     expect(reduced).toBeCloseTo(base * 11 / 21, 1)
   })
 
-  it('returns zero when fully WFH', () => {
-    const fullWfh = { ...lifestyle, wfhDaysPerMonth: 21 }
-    expect(computeCommuteFuelMonthly(car, fullWfh)).toBe(0)
+  it('returns zero when zero commute days', () => {
+    const noDays = { ...lifestyle, commuteDaysPerMonth: 0 }
+    expect(computeCommuteFuelMonthly(car, noDays)).toBe(0)
   })
 })
 
 describe('computeParkingMonthly', () => {
-  it('sums HDB and workplace parking', () => {
+  it('sums residential and workplace parking', () => {
     expect(computeParkingMonthly(lifestyle)).toBe(110 + 200)
   })
 })
@@ -79,7 +77,8 @@ describe('computeCarCosts', () => {
   it('totalMonthly sums all components', () => {
     const result = computeCarCosts(car, lifestyle)
     const expected = result.depreciationMonthly + result.roadTaxMonthly +
-      result.insuranceMonthly + result.parkingMonthly + result.fuelCommuteMonthly
+      result.insuranceMonthly + result.parkingMonthly + result.fuelCommuteMonthly +
+      result.erpCashcardMonthly + result.maintenanceMonthly
     expect(result.totalMonthly).toBeCloseTo(expected)
   })
 
@@ -90,5 +89,16 @@ describe('computeCarCosts', () => {
     expect(result.insuranceMonthly).toBeGreaterThanOrEqual(0)
     expect(result.parkingMonthly).toBeGreaterThanOrEqual(0)
     expect(result.fuelCommuteMonthly).toBeGreaterThanOrEqual(0)
+    expect(result.erpCashcardMonthly).toBeGreaterThanOrEqual(0)
+    expect(result.maintenanceMonthly).toBeGreaterThanOrEqual(0)
+  })
+
+  it('includes ERP and maintenance in total', () => {
+    const result = computeCarCosts(car, lifestyle)
+    const withoutExtras = result.depreciationMonthly + result.roadTaxMonthly +
+      result.insuranceMonthly + result.parkingMonthly + result.fuelCommuteMonthly
+    expect(result.totalMonthly).toBeGreaterThan(withoutExtras)
+    // ERP: 50, Maintenance: 1200/12 = 100
+    expect(result.totalMonthly - withoutExtras).toBeCloseTo(50 + 100)
   })
 })

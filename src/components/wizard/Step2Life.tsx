@@ -2,7 +2,7 @@ import type { Scenario } from '@/types/scenario'
 import { useScenarioStore } from '@/store/scenarioStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
-import { MapPin, Clock, Car, TrainFront, Calendar } from 'lucide-react'
+import { MapPin, Clock, Car, TrainFront } from 'lucide-react'
 
 interface Props {
   scenario: Scenario
@@ -25,10 +25,10 @@ export function Step2Life({ scenario }: Props) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            Commute Time
+            Commute
           </CardTitle>
           <CardDescription>
-            Enter your estimated commute times. These are used to calculate the time-value comparison.
+            Enter your average daily commute times and distance. These are used to calculate costs and time value.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -40,18 +40,18 @@ export function Step2Life({ scenario }: Props) {
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
-                label="Drive time (one-way)"
-                tooltip="Your estimated drive time from home to work, in minutes."
-                value={lifestyle.driveTimeMinutesOneWay}
-                onChange={(v) => updateField('driveTimeMinutesOneWay', v)}
-                suffix="mins"
+                label="Avg. daily driving time"
+                tooltip="Total time spent driving per day (both directions combined). E.g. 30 min each way = 60 min."
+                value={lifestyle.driveTimeMinutesDaily}
+                onChange={(v) => updateField('driveTimeMinutesDaily', v)}
+                suffix="mins/day"
               />
               <FormField
-                label="Driving distance (one-way)"
-                tooltip="Approximate driving distance from home to work. Used to calculate fuel costs."
-                value={lifestyle.commuteDistanceKm}
-                onChange={(v) => updateField('commuteDistanceKm', v)}
-                suffix="km"
+                label="Avg. daily driving distance"
+                tooltip="Total distance driven per day (both directions combined). Used to calculate fuel costs."
+                value={lifestyle.commuteDistanceKmDaily}
+                onChange={(v) => updateField('commuteDistanceKmDaily', v)}
+                suffix="km/day"
               />
             </div>
           </div>
@@ -64,15 +64,15 @@ export function Step2Life({ scenario }: Props) {
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
-                label="Transport time (one-way)"
-                tooltip="Your estimated MRT/bus/grab commute time from home to work, in minutes."
-                value={lifestyle.ptTimeMinutesOneWay}
-                onChange={(v) => updateField('ptTimeMinutesOneWay', v)}
-                suffix="mins"
+                label="Avg. daily transport time"
+                tooltip="Total time spent on public transport per day (both directions combined). E.g. 60 min each way = 120 min."
+                value={lifestyle.ptTimeMinutesDaily}
+                onChange={(v) => updateField('ptTimeMinutesDaily', v)}
+                suffix="mins/day"
               />
               <FormField
-                label="Average daily transport cost"
-                tooltip="Your average round-trip cost by public transport (MRT, bus, or grab). Put in a rough estimate — it doesn't need to be exact."
+                label="Avg. daily transport cost"
+                tooltip="Your average daily cost for public transport (MRT, bus, or grab — both directions). Rough estimate is fine."
                 value={lifestyle.ptDailyCost}
                 onChange={(v) => updateField('ptDailyCost', v)}
                 prefix="$"
@@ -82,29 +82,16 @@ export function Step2Life({ scenario }: Props) {
             </div>
           </div>
 
-          {/* Work schedule */}
-          <div className="space-y-3">
-            <h4 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              Work Schedule
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                label="Work days per month"
-                tooltip="Used to compute monthly commute costs and time value. Typical: 21-22 days."
-                value={lifestyle.workDaysPerMonth}
-                onChange={(v) => updateField('workDaysPerMonth', v)}
-                suffix="days"
-              />
-              <FormField
-                label="WFH days per month"
-                tooltip="Days you work from home. Reduces both commute costs and time value."
-                value={lifestyle.wfhDaysPerMonth}
-                onChange={(v) => updateField('wfhDaysPerMonth', v)}
-                suffix="days"
-              />
-            </div>
-          </div>
+          {/* Commute frequency */}
+          <FormField
+            label="Days you commute per month"
+            tooltip="How many days per month you'd need to commute. Typical office worker: 21 days. Adjust for WFH, part-time, or shift work."
+            value={lifestyle.commuteDaysPerMonth}
+            onChange={(v) => updateField('commuteDaysPerMonth', v)}
+            suffix="days"
+            min={0}
+            max={31}
+          />
         </CardContent>
       </Card>
 
@@ -116,16 +103,16 @@ export function Step2Life({ scenario }: Props) {
             Running Costs
           </CardTitle>
           <CardDescription>
-            Parking, fuel, and weekend driving costs. Defaults are typical Singapore values.
+            Parking and fuel costs. Defaults are typical Singapore values.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
-              label="HDB Season Parking"
-              tooltip="Monthly HDB parking at home. Tier 1: ~$110/mo, Tier 2: $165/mo. Check HDB website for your estate."
-              value={lifestyle.hdbSeasonParkingMonthly}
-              onChange={(v) => updateField('hdbSeasonParkingMonthly', v)}
+              label="Residential Parking"
+              tooltip="Monthly parking at home. HDB Tier 1: ~$110/mo, Tier 2: $165/mo. Condo parking may be included in maintenance fees."
+              value={lifestyle.residentialParkingMonthly}
+              onChange={(v) => updateField('residentialParkingMonthly', v)}
               prefix="$"
               suffix="/mo"
             />

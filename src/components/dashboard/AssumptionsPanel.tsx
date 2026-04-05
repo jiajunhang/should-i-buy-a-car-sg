@@ -53,6 +53,8 @@ export function AssumptionsPanel({ scenario }: Props) {
             <Field label="Fuel Consumption" value={`${car.fuelEconomyKmPerL} km/L`} />
             <Field label="Road Tax" value={`${formatCurrency(car.annualRoadTax)}/yr`} />
             <Field label="Insurance" value={`${formatCurrency(car.annualInsurance)}/yr`} />
+            <Field label="ERP / Cashcard" value={`${formatCurrency(car.erpCashcardMonthly)}/mo`} />
+            <Field label="Annual Maintenance" value={`${formatCurrency(car.annualMaintenance)}/yr`} />
           </section>
 
           {/* Commute & Costs */}
@@ -60,15 +62,14 @@ export function AssumptionsPanel({ scenario }: Props) {
             <h4 className="text-sm font-bold uppercase tracking-wide text-foreground border-b pb-2 mb-2">
               Commute & Lifestyle
             </h4>
-            <Field label="Drive Time (one-way)" value={`${lifestyle.driveTimeMinutesOneWay} min`} />
-            <Field label="PT Time (one-way)" value={`${lifestyle.ptTimeMinutesOneWay} min`} />
-            <Field label="Driving Distance (one-way)" value={`${lifestyle.commuteDistanceKm} km`} />
-            <Field label="Work Days" value={`${lifestyle.workDaysPerMonth}/mo`} />
-            <Field label="WFH Days" value={`${lifestyle.wfhDaysPerMonth}/mo`} />
-            <Field label="HDB Parking" value={`${formatCurrency(lifestyle.hdbSeasonParkingMonthly)}/mo`} />
+            <Field label="Avg. Daily Driving Time" value={`${lifestyle.driveTimeMinutesDaily} min`} />
+            <Field label="Avg. Daily Public Transport Time" value={`${lifestyle.ptTimeMinutesDaily} min`} />
+            <Field label="Avg. Daily Driving Distance" value={`${lifestyle.commuteDistanceKmDaily} km`} />
+            <Field label="Commute Days" value={`${lifestyle.commuteDaysPerMonth}/mo`} />
+            <Field label="Residential Parking" value={`${formatCurrency(lifestyle.residentialParkingMonthly)}/mo`} />
             <Field label="Work Parking" value={`${formatCurrency(lifestyle.workplaceParkingMonthly)}/mo`} />
             <Field label="Petrol" value={`$${lifestyle.petrolPricePerL.toFixed(2)}/L`} />
-            <Field label="Avg. Daily Transport" value={`$${lifestyle.ptDailyCost.toFixed(2)}/day`} />
+            <Field label="Avg. Daily Transport Cost" value={`$${lifestyle.ptDailyCost.toFixed(2)}/day`} />
           </section>
 
           {/* Income */}
@@ -90,10 +91,6 @@ export function AssumptionsPanel({ scenario }: Props) {
             <Field label="Loan Interest" value={`${financing.loanInterestRatePct}% p.a.`} />
             <Field label="Loan Tenure" value={`${financing.loanTenureMonths} months`} />
           </section>
-
-          <p className="text-xs text-muted-foreground text-center" data-print-hide>
-            To change these values, duplicate this scenario and re-run the wizard.
-          </p>
         </div>
       </div>
     </div>

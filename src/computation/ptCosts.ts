@@ -1,8 +1,7 @@
 import type { LifestyleInputs, PTCostBreakdown } from '@/types/scenario'
 
 export function computePTCosts(lifestyle: LifestyleInputs): PTCostBreakdown {
-  const commuteDays = lifestyle.workDaysPerMonth - lifestyle.wfhDaysPerMonth
-  const ptMonthly = lifestyle.ptDailyCost * commuteDays
+  const ptMonthly = lifestyle.ptDailyCost * lifestyle.commuteDaysPerMonth
 
   return {
     ptMonthly,

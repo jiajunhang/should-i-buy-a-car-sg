@@ -7,6 +7,8 @@ export interface CarInputs {
   fuelEconomyKmPerL: number
   annualInsurance: number
   annualRoadTax: number
+  erpCashcardMonthly: number  // ERP + cashcard estimate
+  annualMaintenance: number   // servicing, tyres, misc repairs (annual)
 }
 
 // Derived helpers (not stored)
@@ -20,15 +22,13 @@ export function getScrapValue(car: CarInputs): number {
 }
 
 export interface LifestyleInputs {
-  // Commute (manual only, auto-estimate deferred)
-  driveTimeMinutesOneWay: number
-  ptTimeMinutesOneWay: number
-  commuteDistanceKm: number   // one-way driving distance
-  // Work schedule
-  workDaysPerMonth: number    // default 21
-  wfhDaysPerMonth: number     // default 0
+  // Commute — all values are daily averages (round trip)
+  driveTimeMinutesDaily: number   // avg total driving time per day
+  ptTimeMinutesDaily: number      // avg total PT time per day
+  commuteDistanceKmDaily: number  // avg total driving distance per day
+  commuteDaysPerMonth: number     // days you'd commute
   // Parking
-  hdbSeasonParkingMonthly: number
+  residentialParkingMonthly: number
   workplaceParkingMonthly: number
   // Petrol
   petrolPricePerL: number     // default RON95 ~3.40
@@ -68,6 +68,8 @@ export interface CarCostBreakdown {
   insuranceMonthly: number
   parkingMonthly: number
   fuelCommuteMonthly: number
+  erpCashcardMonthly: number
+  maintenanceMonthly: number
   totalMonthly: number
 }
 

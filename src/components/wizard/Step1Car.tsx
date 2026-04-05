@@ -3,8 +3,11 @@ import { getScrapValue, getCoeMonthsRemaining } from '@/types/scenario'
 import { useScenarioStore } from '@/store/scenarioStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
+import { Select } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
 import { formatCurrency } from '@/lib/utils'
-import { Car } from 'lucide-react'
+import { Car, Info } from 'lucide-react'
+import { Tooltip } from '@/components/ui/tooltip'
 
 interface Props {
   scenario: Scenario
@@ -50,7 +53,7 @@ export function Step1Car({ scenario }: Props) {
           value={car.name}
           onChange={(v) => updateCar(id, { name: v })}
           tooltip="Used to label your scenario tab. Has no effect on calculations."
-          placeholder="e.g. Audi A4 2.0L B9.5"
+          placeholder="e.g. Honda Civic 1.6L"
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -71,26 +74,40 @@ export function Step1Car({ scenario }: Props) {
           />
         </div>
 
-        {/* COE Remaining: years + months input */}
+        {/* COE Remaining: dropdown selectors */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            label="COE Remaining (Years)"
-            tooltip="Years portion of COE remaining. Found on sgCarMart as 'COE Expiry'. New cars = 10 years."
-            value={car.coeYears}
-            onChange={(v) => updateNumField('coeYears', v)}
-            suffix="years"
-            min={0}
-            max={10}
-          />
-          <FormField
-            label="COE Remaining (Months)"
-            tooltip="Months portion of COE remaining. E.g. if sgCarMart shows '5 years 8 months', enter 8 here."
-            value={car.coeMonths}
-            onChange={(v) => updateNumField('coeMonths', v)}
-            suffix="months"
-            min={0}
-            max={11}
-          />
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <Label>COE Remaining (Years)</Label>
+              <Tooltip content="Years portion of COE remaining. Found on sgCarMart as 'COE Expiry'. New cars = 10 years.">
+                <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+              </Tooltip>
+            </div>
+            <Select
+              value={car.coeYears}
+              onChange={(e) => updateCar(id, { coeYears: parseInt(e.target.value) })}
+            >
+              {Array.from({ length: 11 }, (_, i) => (
+                <option key={i} value={i}>{i} {i === 1 ? 'year' : 'years'}</option>
+              ))}
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <Label>COE Remaining (Months)</Label>
+              <Tooltip content="Months portion of COE remaining. E.g. if sgCarMart shows '5 years 8 months', enter 8 here.">
+                <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+              </Tooltip>
+            </div>
+            <Select
+              value={car.coeMonths}
+              onChange={(e) => updateCar(id, { coeMonths: parseInt(e.target.value) })}
+            >
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i} value={i}>{i} {i === 1 ? 'month' : 'months'}</option>
+              ))}
+            </Select>
+          </div>
         </div>
 
         {/* Derived read-only fields */}
@@ -133,6 +150,25 @@ export function Step1Car({ scenario }: Props) {
           prefix="$"
           suffix="/yr"
         />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            label="ERP / Cashcard"
+            tooltip="Monthly estimate for ERP charges and cashcard top-ups. Depends on your route — $30-$80/mo is typical."
+            value={car.erpCashcardMonthly}
+            onChange={(v) => updateNumField('erpCashcardMonthly', v)}
+            prefix="$"
+            suffix="/mo"
+          />
+          <FormField
+            label="Annual Maintenance"
+            tooltip="Yearly estimate for servicing, tyres, and misc repairs. Budget ~$1,000-$1,800/yr depending on car age and mileage."
+            value={car.annualMaintenance}
+            onChange={(v) => updateNumField('annualMaintenance', v)}
+            prefix="$"
+            suffix="/yr"
+          />
+        </div>
       </CardContent>
     </Card>
   )

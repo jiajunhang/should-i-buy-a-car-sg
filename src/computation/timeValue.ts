@@ -17,10 +17,10 @@ export function computeTimeValue(
 ): TimeValueResult {
   const costPerMinute = computeCostPerMinute(compensation)
   const costPerHour = costPerMinute * 60
-  const commuteDays = lifestyle.workDaysPerMonth - lifestyle.wfhDaysPerMonth
+  const commuteDays = lifestyle.commuteDaysPerMonth
 
-  const carDailyMinutes = lifestyle.driveTimeMinutesOneWay * 2
-  const ptDailyMinutes = lifestyle.ptTimeMinutesOneWay * 2
+  const carDailyMinutes = lifestyle.driveTimeMinutesDaily
+  const ptDailyMinutes = lifestyle.ptTimeMinutesDaily
 
   const carCommuteTimeCostMonthly = carDailyMinutes * commuteDays * costPerMinute
   const ptCommuteTimeCostMonthly = ptDailyMinutes * commuteDays * costPerMinute

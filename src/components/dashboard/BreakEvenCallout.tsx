@@ -31,14 +31,14 @@ export function BreakEvenCallout({ analysis }: Props) {
               <>
                 <p className="text-xl font-bold mt-1 text-sensible">Always sensible</p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  The car is cheaper than public transport even before accounting for time value.
+                  Driving is cheaper than public transport even before accounting for time value.
                 </p>
               </>
             ) : (
               <>
                 <p className="text-xl font-bold mt-1 text-hard-to-justify">No break-even point</p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  The car doesn't save commute time over public transport, so time value can't close the cost gap.
+                  Driving doesn't save commute time over public transport, so time value can't close the cost gap.
                   Consider whether non-financial benefits (comfort, flexibility) justify the premium.
                 </p>
               </>

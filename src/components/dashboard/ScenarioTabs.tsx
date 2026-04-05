@@ -1,10 +1,10 @@
 import { useScenarioStore } from '@/store/scenarioStore'
 import { Button } from '@/components/ui/button'
-import { Plus, X, Copy } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function ScenarioTabs() {
-  const { scenarios, activeScenarioId, setActiveScenario, createScenario, duplicateScenario, deleteScenario } = useScenarioStore()
+  const { scenarios, activeScenarioId, setActiveScenario, createScenario, deleteScenario } = useScenarioStore()
 
   return (
     <div className="flex items-center gap-1 overflow-x-auto pb-1">
@@ -20,24 +20,13 @@ export function ScenarioTabs() {
           onClick={() => setActiveScenario(s.id)}
         >
           <span className="truncate max-w-[120px]">{s.name || 'New Car'}</span>
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            {s.wizardStep === 'complete' && (
-              <button
-                onClick={(e) => { e.stopPropagation(); duplicateScenario(s.id) }}
-                className="p-0.5 hover:bg-white/20 rounded"
-                title="Duplicate"
-              >
-                <Copy className="h-3 w-3" />
-              </button>
-            )}
-            <button
-              onClick={(e) => { e.stopPropagation(); deleteScenario(s.id) }}
-              className="p-0.5 hover:bg-white/20 rounded"
-              title="Delete"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); deleteScenario(s.id) }}
+            className="p-0.5 hover:bg-white/20 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Delete"
+          >
+            <X className="h-3 w-3" />
+          </button>
         </div>
       ))}
       <Button

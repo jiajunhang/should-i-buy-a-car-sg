@@ -30,29 +30,29 @@ describe('computeCostPerHour', () => {
 describe('computeTimeValue', () => {
   it('car saves time when driving is faster', () => {
     const result = computeTimeValue(DEFAULT_LIFESTYLE, DEFAULT_COMPENSATION)
-    // PT 60 min, drive 30 min → savings = (60-30)*2 = 60 min/day
+    // PT 120 min/day, drive 60 min/day → savings = 60 min/day
     expect(result.timeSavingsMonthly).toBeGreaterThan(0)
     expect(result.timeSavingsValueMonthly).toBeGreaterThan(0)
   })
 
   it('negative time savings when driving is slower', () => {
-    const slower = { ...DEFAULT_LIFESTYLE, driveTimeMinutesOneWay: 90 }
+    const slower = { ...DEFAULT_LIFESTYLE, driveTimeMinutesDaily: 180 }
     const result = computeTimeValue(slower, DEFAULT_COMPENSATION)
     expect(result.timeSavingsMonthly).toBeLessThan(0)
     expect(result.timeSavingsValueMonthly).toBeLessThan(0)
   })
 
   it('zero time savings when equal', () => {
-    const equal = { ...DEFAULT_LIFESTYLE, driveTimeMinutesOneWay: 60 }
+    const equal = { ...DEFAULT_LIFESTYLE, driveTimeMinutesDaily: 120 }
     const result = computeTimeValue(equal, DEFAULT_COMPENSATION)
     expect(result.timeSavingsMonthly).toBe(0)
     expect(result.timeSavingsValueMonthly).toBe(0)
   })
 
-  it('WFH reduces time value', () => {
+  it('fewer commute days reduces time value', () => {
     const base = computeTimeValue(DEFAULT_LIFESTYLE, DEFAULT_COMPENSATION)
-    const wfh = computeTimeValue({ ...DEFAULT_LIFESTYLE, wfhDaysPerMonth: 10 }, DEFAULT_COMPENSATION)
-    expect(wfh.timeSavingsValueMonthly).toBeLessThan(base.timeSavingsValueMonthly)
+    const fewer = computeTimeValue({ ...DEFAULT_LIFESTYLE, commuteDaysPerMonth: 11 }, DEFAULT_COMPENSATION)
+    expect(fewer.timeSavingsValueMonthly).toBeLessThan(base.timeSavingsValueMonthly)
   })
 
   it('higher salary increases time value', () => {

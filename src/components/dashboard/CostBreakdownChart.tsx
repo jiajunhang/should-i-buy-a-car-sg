@@ -15,6 +15,8 @@ const CAR_COST_COLORS = {
   insurance: '#eab308',
   parking: '#22c55e',
   fuelCommute: '#3b82f6',
+  erp: '#8b5cf6',
+  maintenance: '#ec4899',
 }
 
 export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
@@ -26,6 +28,8 @@ export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
       Insurance: Math.round(carCosts.insuranceMonthly),
       Parking: Math.round(carCosts.parkingMonthly),
       Fuel: Math.round(carCosts.fuelCommuteMonthly),
+      'ERP': Math.round(carCosts.erpCashcardMonthly),
+      'Maintenance': Math.round(carCosts.maintenanceMonthly),
     },
     {
       name: 'Public Transport',
@@ -39,6 +43,8 @@ export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
     { name: 'Insurance', value: Math.round(carCosts.insuranceMonthly), color: CAR_COST_COLORS.insurance },
     { name: 'Parking', value: Math.round(carCosts.parkingMonthly), color: CAR_COST_COLORS.parking },
     { name: 'Fuel', value: Math.round(carCosts.fuelCommuteMonthly), color: CAR_COST_COLORS.fuelCommute },
+    { name: 'ERP', value: Math.round(carCosts.erpCashcardMonthly), color: CAR_COST_COLORS.erp },
+    { name: 'Maintenance', value: Math.round(carCosts.maintenanceMonthly), color: CAR_COST_COLORS.maintenance },
   ]
     .filter(item => item.value > 0)
     .sort((a, b) => b.value - a.value)
@@ -92,6 +98,8 @@ export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
               <Bar dataKey="Insurance" stackId="a" fill={CAR_COST_COLORS.insurance} />
               <Bar dataKey="Parking" stackId="a" fill={CAR_COST_COLORS.parking} />
               <Bar dataKey="Fuel" stackId="a" fill={CAR_COST_COLORS.fuelCommute} />
+              <Bar dataKey="ERP" stackId="a" fill={CAR_COST_COLORS.erp} />
+              <Bar dataKey="Maintenance" stackId="a" fill={CAR_COST_COLORS.maintenance} />
               <Bar dataKey="Transport" stackId="a" fill="#06b6d4" />
             </BarChart>
           </ResponsiveContainer>
