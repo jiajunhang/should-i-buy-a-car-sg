@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { Scenario, FinancingComparison } from '@/types/scenario'
-import { getCoeMonthsRemaining, getScrapValue } from '@/types/scenario'
+import { getCoeMonthsRemaining } from '@/types/scenario'
 import { useScenarioStore } from '@/store/scenarioStore'
 import { computeFinancingComparison } from '@/computation/financing'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -119,12 +119,14 @@ function ComparisonTable({ financing, scenario }: { financing: FinancingComparis
   const { car, financing: fin } = scenario
   const loanPrincipal = Math.max(0, car.purchasePrice - fin.loanDownPayment)
   const tenureMonths = fin.loanTenureMonths
-  const scrapValue = getScrapValue(car)
-  const avgCashCapital = (car.purchasePrice + scrapValue) / 2
-
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
+        <colgroup>
+          <col style={{ width: '40%' }} />
+          <col style={{ width: '30%' }} />
+          <col style={{ width: '30%' }} />
+        </colgroup>
         <thead>
           <tr className="border-b">
             <th className="text-left py-2 pr-4 text-muted-foreground font-medium">
@@ -167,9 +169,8 @@ function ComparisonTable({ financing, scenario }: { financing: FinancingComparis
             cashValue={`${formatCurrency(financing.cashOpportunityCostMonthly)}/mo`}
             loanValue={`${formatCurrency(financing.loanOpportunityCostMonthly)}/mo`}
             cashDetail={[
-              `Car depreciates from ${formatCurrency(car.purchasePrice)} to ${formatCurrency(scrapValue)} (scrap)`,
-              `Avg capital tied up ≈ (${formatCurrency(car.purchasePrice)} + ${formatCurrency(scrapValue)}) ÷ 2 = ${formatCurrency(avgCashCapital)}`,
-              `= ${formatCurrency(avgCashCapital)} × ${fin.cashInvestmentReturnPct}% ÷ 12`,
+              `Full purchase price is out of your portfolio:`,
+              `= ${formatCurrency(car.purchasePrice)} × ${fin.cashInvestmentReturnPct}% ÷ 12`,
               `= ${formatCurrencyDetailed(financing.cashOpportunityCostMonthly)}/mo`,
             ]}
             loanDetail={[

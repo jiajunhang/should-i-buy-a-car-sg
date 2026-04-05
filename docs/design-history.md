@@ -303,3 +303,174 @@ No schema changes from v3.1. Same `Scenario` type.
 - Car comparison mode (multi-car side-by-side)
 - Copy/export summary feature
 - Grab/mixed transport modes (removed in v3.1, may revisit with better UX)
+
+---
+
+## V3.3 — Critical Loan Fix, Weekend Mileage Removal (2026-04-05)
+
+### Changes
+
+**1. Critical bug: Singapore flat-rate loan calculation**
+- Our code used standard amortisation (reducing balance interest), but Singapore car loans use **flat-rate interest**: interest is calculated on the original principal for the full term.
+- Formula: `totalInterest = principal × flatRate × years`, `monthlyRepayment = (principal + totalInterest) / tenureMonths`
+- Verified against sgCarMart: 126,800 principal @ 2.48% × 7yr = $22,012 interest, $1,772/mo.
+- Renamed functions: `computeAmortisedRepayment` → `computeFlatRateInterest` + `computeLoanRepaymentMonthly`.
+
+**2. Weekend mileage removed**
+- Hard to estimate, not used in the core inequality, added cognitive load.
+- Removed `weekendMileageKm` from `LifestyleInputs`, defaults, wizard, dashboard, computation, and charts.
+- Simplified `CarCostBreakdown`: removed `fuelWeekendMonthly`, `totalCommuteMonthly`, `totalOwnershipMonthly`. Now just `fuelCommuteMonthly` and `totalMonthly`.
+
+**3. Wizard intro context**
+- Added "How this tool works" info box on Step 1 explaining the tool's purpose: collect inputs → compute time-value comparison → dashboard. "Rough figures are fine."
+
+### Data Model Changes
+
+```
+// REMOVED: LifestyleInputs.weekendMileageKm
+// SIMPLIFIED: CarCostBreakdown → { depreciationMonthly, roadTaxMonthly, insuranceMonthly, parkingMonthly, fuelCommuteMonthly, totalMonthly }
+```
+
+---
+
+## V4 — UX Overhaul, EV Support, Computation Transparency (2026-04-05/06)
+
+Major UX overhaul driven by user feedback. Core theme: reduce friction, increase clarity, add missing cost components.
+
+### Changes
+
+#### Wizard UX
+
+**1. COE remaining → dropdown selectors**
+- Years (0–10) and months (0–11) as `<select>` instead of free-text inputs. Faster, less error-prone.
+
+**2. Commute fields → daily averages**
+- Removed "one-way" framing. All commute fields now represent daily totals (round trip):
+  - `driveTimeMinutesOneWay` → `driveTimeMinutesDaily` (default 60)
+  - `ptTimeMinutesOneWay` → `ptTimeMinutesDaily` (default 120)
+  - `commuteDistanceKm` → `commuteDistanceKmDaily` (default 40)
+- Consistent with "average daily transport cost" framing. Removed all `*2` multipliers from computation layer.
+
+**3. Work schedule collapsed**
+- Replaced `workDaysPerMonth` + `wfhDaysPerMonth` with single `commuteDaysPerMonth` field (default 21).
+- Works for any user type — office worker, freelancer, shift worker. One fewer field.
+
+**4. Renamed "HDB Season Parking" → "Residential Parking"**
+- Not everyone lives in HDB. Generic label is more inclusive.
+
+**5. Added ERP/Cashcard + Annual Maintenance fields**
+- Both are non-trivial car ownership costs previously missing from the calculation.
+- `erpCashcardMonthly` (default $50/mo), `annualMaintenance` (default $1,200/yr, divided by 12 internally).
+- Maintenance input is annual because that's how people mentally budget it.
+
+**6. Income sliders**
+- Annual compensation: slider + editable input combo (1k/tick). Drag for rough value, type for exact.
+- Hours worked/day: slider (4–16 hrs, 0.5 step).
+
+**7. Financing fields → sliders in wizard**
+- Investment return, down payment, loan interest rate, loan tenure — all sliders matching dashboard.
+- Loan tenure: 1-month step (not 6-month).
+
+**8. EV support (NEW)**
+- Added `fuelType: 'petrol' | 'ev'` toggle in Step 1 (Car Details).
+- Petrol: existing `fuelEconomyKmPerL` + `petrolPricePerL` fields.
+- EV: `evEfficiencyKmPerKwh` (default 6.0) + `electricityPricePerKwh` (default $0.33).
+- Computation layer handles both via `computeCommuteFuelMonthly()` branching on fuel type.
+- Wizard, assumptions panel, and running costs fields all adapt based on selection.
+
+#### Dashboard — Verdict Panel Rewrite
+
+**9. Clear labels replacing opaque "gap" terminology**
+- "Monthly gap (without time)" → **"Extra cost of driving"** with dynamic sublabel stating the dollar amount and direction.
+- "Monthly gap (with time value)" → **"Net premium after time savings"** with dynamic sublabel: when positive, "driving is still $X/mo more expensive"; when negative, "driving is actually $X/mo cheaper."
+
+**10. Inequality visualization**
+- Shows `Car (financial + time) ≤ PT (financial + time)` with the actual dollar amounts.
+- Each side shows breakdown: financial cost + time cost separately labeled.
+- `≤` / `>` symbol colored green/red based on verdict.
+
+**11. Expandable cost breakdown in verdict**
+- "Show breakdown" button reveals a table-aligned view of all car cost components vs PT cost.
+- Both columns use a shared table layout so Totals and Time Cost rows are always horizontally aligned.
+
+**12. Intangibles note**
+- When net premium is positive (car costs more): "This $X/mo is what you'd pay for convenience, on-demand travel, driving enjoyment, and easily visiting family."
+- User feedback: "this is very good and insightful."
+
+#### Dashboard — Computation Transparency
+
+**13. Financing table: click-to-expand rows**
+- Each row (upfront, monthly repayment, total interest, opportunity cost, effective cost) is clickable.
+- Expanded detail shows exact formulas with numbers, e.g. `$126,800 × 2.48% × 84mo ÷ 12 = $22,012`.
+- Expansion respects 3-column layout — cash calcs under "Full Cash", loan calcs under "Bank Loan".
+- Table uses `table-layout: fixed` (40%/30%/30%) to prevent column width jumping on expand.
+
+**14. Time Value panel: click-to-expand rows**
+- Monthly commute time cost (car), (PT), and time value of driving — all expandable inline with step-by-step formulas.
+
+**15. Loan tenure slider in dashboard**
+- Added to financing overlay (12 to min(COE, 84) months, 1-month step). Joins existing sliders for return rate, loan rate, and down payment.
+
+#### Dashboard — Layout & Navigation
+
+**16. Panel reorder**
+- Top-to-bottom: Verdict → Input Params → Explore Sliders → Break-even + Time Value (2-col) → Sensitivity → Financing → Cost Breakdown Charts.
+- Most critical insights at top; straightforward charts at bottom.
+
+**17. "Edit Inputs" button**
+- Replaces "duplicate to re-run wizard" pattern. Button on dashboard sends user back to wizard step 0 for the same scenario.
+- Removed `duplicateScenario` feature entirely (served no purpose without input editing).
+
+**18. All "PT" → "Public Transport"**
+- Expanded acronym everywhere in the UI for clarity.
+
+#### Computation Fix
+
+**19. Opportunity cost: removed ÷2 approximation**
+- Previously used average capital tied up: `(purchasePrice + scrapValue) / 2`. This assumes you could liquidate at depreciated value at any time.
+- Simplified to: `purchasePrice × returnRate / 12`. Full purchase price is out of your portfolio from day one. Consistent with loan side (downPayment × rate / 12).
+- Simpler, more intuitive, avoids user confusion.
+
+### Data Model (end of v4)
+
+```typescript
+type FuelType = 'petrol' | 'ev'
+
+CarInputs {
+  name, purchasePrice, annualDepreciation, coeYears, coeMonths,
+  fuelType: FuelType,           // NEW — petrol or ev
+  fuelEconomyKmPerL,            // petrol
+  evEfficiencyKmPerKwh,         // NEW — EV km per kWh
+  annualInsurance, annualRoadTax,
+  erpCashcardMonthly,           // NEW — ERP + cashcard estimate
+  annualMaintenance,            // NEW — annual servicing/tyres/repairs
+}
+
+LifestyleInputs {
+  driveTimeMinutesDaily,        // RENAMED — was driveTimeMinutesOneWay
+  ptTimeMinutesDaily,           // RENAMED — was ptTimeMinutesOneWay
+  commuteDistanceKmDaily,       // RENAMED — was commuteDistanceKm
+  commuteDaysPerMonth,          // NEW — replaces workDaysPerMonth + wfhDaysPerMonth
+  residentialParkingMonthly,    // RENAMED — was hdbSeasonParkingMonthly
+  workplaceParkingMonthly,
+  petrolPricePerL,
+  electricityPricePerKwh,       // NEW — EV charging cost
+  ptDailyCost,
+}
+
+CarCostBreakdown {
+  depreciationMonthly, roadTaxMonthly, insuranceMonthly, parkingMonthly,
+  fuelCommuteMonthly,           // handles both petrol and EV
+  erpCashcardMonthly,           // NEW
+  maintenanceMonthly,           // NEW
+  totalMonthly,
+}
+```
+
+### Deferred to V5+
+
+- OneMap API integration (postal code → commute time)
+- sgCarMart URL paste → auto-populate car details
+- Live petrol price fetch
+- Car comparison mode (multi-car side-by-side)
+- Copy/export summary feature

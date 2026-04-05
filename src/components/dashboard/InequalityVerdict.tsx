@@ -44,29 +44,63 @@ function CostBreakdownExpander({ analysis }: { analysis: AnalysisResult }) {
         {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
       </button>
       {expanded && (
-        <div className="grid grid-cols-[1fr_auto_1fr] gap-3 mt-3 text-xs">
-          <div className="space-y-1 text-muted-foreground">
-            <p className="font-medium text-foreground text-xs uppercase tracking-wide mb-1">Car financial costs</p>
-            <p className="flex justify-between"><span>Depreciation</span><span>{formatCurrency(carCosts.depreciationMonthly)}</span></p>
-            <p className="flex justify-between"><span>Road Tax</span><span>{formatCurrency(carCosts.roadTaxMonthly)}</span></p>
-            <p className="flex justify-between"><span>Insurance</span><span>{formatCurrency(carCosts.insuranceMonthly)}</span></p>
-            <p className="flex justify-between"><span>Parking</span><span>{formatCurrency(carCosts.parkingMonthly)}</span></p>
-            <p className="flex justify-between"><span>Fuel</span><span>{formatCurrency(carCosts.fuelCommuteMonthly)}</span></p>
-            <p className="flex justify-between"><span>ERP</span><span>{formatCurrency(carCosts.erpCashcardMonthly)}</span></p>
-            <p className="flex justify-between"><span>Maintenance</span><span>{formatCurrency(carCosts.maintenanceMonthly)}</span></p>
-            <p className="flex justify-between font-semibold text-foreground border-t pt-1"><span>Total</span><span>{formatCurrency(carCosts.totalMonthly)}/mo</span></p>
-            <p className="font-medium text-foreground text-xs uppercase tracking-wide mt-2 mb-1">Car time cost</p>
-            <p className="flex justify-between"><span>Commute time value</span><span>{formatCurrency(timeValue.carCommuteTimeCostMonthly)}/mo</span></p>
-          </div>
-          <div className="w-px bg-border" />
-          <div className="space-y-1 text-muted-foreground">
-            <p className="font-medium text-foreground text-xs uppercase tracking-wide mb-1">Public transport costs</p>
-            <p className="flex justify-between"><span>Daily transport</span><span>{formatCurrency(ptCosts.ptMonthly)}</span></p>
-            <p className="flex justify-between font-semibold text-foreground border-t pt-1"><span>Total</span><span>{formatCurrency(ptCosts.totalMonthly)}/mo</span></p>
-            <p className="font-medium text-foreground text-xs uppercase tracking-wide mt-2 mb-1">Public transport time cost</p>
-            <p className="flex justify-between"><span>Commute time value</span><span>{formatCurrency(timeValue.ptCommuteTimeCostMonthly)}/mo</span></p>
-          </div>
-        </div>
+        <table className="w-full text-xs mt-3" style={{ tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: '50%' }} />
+            <col style={{ width: '50%' }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th className="text-left font-medium text-foreground uppercase tracking-wide pb-1 pr-3">Car financial costs</th>
+              <th className="text-left font-medium text-foreground uppercase tracking-wide pb-1 pl-3 border-l">Public transport costs</th>
+            </tr>
+          </thead>
+          <tbody className="text-muted-foreground">
+            <tr>
+              <td className="py-0.5 pr-3"><span className="flex justify-between"><span>Depreciation</span><span>{formatCurrency(carCosts.depreciationMonthly)}</span></span></td>
+              <td className="py-0.5 pl-3 border-l"><span className="flex justify-between"><span>Daily transport</span><span>{formatCurrency(ptCosts.ptMonthly)}</span></span></td>
+            </tr>
+            <tr>
+              <td className="py-0.5 pr-3"><span className="flex justify-between"><span>Road Tax</span><span>{formatCurrency(carCosts.roadTaxMonthly)}</span></span></td>
+              <td className="py-0.5 pl-3 border-l" />
+            </tr>
+            <tr>
+              <td className="py-0.5 pr-3"><span className="flex justify-between"><span>Insurance</span><span>{formatCurrency(carCosts.insuranceMonthly)}</span></span></td>
+              <td className="py-0.5 pl-3 border-l" />
+            </tr>
+            <tr>
+              <td className="py-0.5 pr-3"><span className="flex justify-between"><span>Parking</span><span>{formatCurrency(carCosts.parkingMonthly)}</span></span></td>
+              <td className="py-0.5 pl-3 border-l" />
+            </tr>
+            <tr>
+              <td className="py-0.5 pr-3"><span className="flex justify-between"><span>Fuel / Energy</span><span>{formatCurrency(carCosts.fuelCommuteMonthly)}</span></span></td>
+              <td className="py-0.5 pl-3 border-l" />
+            </tr>
+            <tr>
+              <td className="py-0.5 pr-3"><span className="flex justify-between"><span>ERP</span><span>{formatCurrency(carCosts.erpCashcardMonthly)}</span></span></td>
+              <td className="py-0.5 pl-3 border-l" />
+            </tr>
+            <tr>
+              <td className="py-0.5 pr-3"><span className="flex justify-between"><span>Maintenance</span><span>{formatCurrency(carCosts.maintenanceMonthly)}</span></span></td>
+              <td className="py-0.5 pl-3 border-l" />
+            </tr>
+            {/* Totals — aligned */}
+            <tr className="font-semibold text-foreground border-t">
+              <td className="pt-1 pr-3"><span className="flex justify-between"><span>Total</span><span>{formatCurrency(carCosts.totalMonthly)}/mo</span></span></td>
+              <td className="pt-1 pl-3 border-l"><span className="flex justify-between"><span>Total</span><span>{formatCurrency(ptCosts.totalMonthly)}/mo</span></span></td>
+            </tr>
+            {/* Time cost header — aligned */}
+            <tr>
+              <td className="pt-3 pb-1 pr-3 font-medium text-foreground uppercase tracking-wide">Car time cost</td>
+              <td className="pt-3 pb-1 pl-3 border-l font-medium text-foreground uppercase tracking-wide">Public transport time cost</td>
+            </tr>
+            {/* Time cost values — aligned */}
+            <tr className="text-muted-foreground">
+              <td className="py-0.5 pr-3"><span className="flex justify-between"><span>Commute time value</span><span>{formatCurrency(timeValue.carCommuteTimeCostMonthly)}/mo</span></span></td>
+              <td className="py-0.5 pl-3 border-l"><span className="flex justify-between"><span>Commute time value</span><span>{formatCurrency(timeValue.ptCommuteTimeCostMonthly)}/mo</span></span></td>
+            </tr>
+          </tbody>
+        </table>
       )}
     </div>
   )

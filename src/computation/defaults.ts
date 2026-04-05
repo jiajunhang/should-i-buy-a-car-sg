@@ -6,7 +6,9 @@ export const DEFAULT_CAR: CarInputs = {
   annualDepreciation: 15000,
   coeYears: 10,
   coeMonths: 0,
+  fuelType: 'petrol',
   fuelEconomyKmPerL: 13.0,
+  evEfficiencyKmPerKwh: 6.0,
   annualInsurance: 3000,
   annualRoadTax: 700,
   erpCashcardMonthly: 50,
@@ -21,6 +23,7 @@ export const DEFAULT_LIFESTYLE: LifestyleInputs = {
   residentialParkingMonthly: 110,
   workplaceParkingMonthly: 200,
   petrolPricePerL: 3.00,
+  electricityPricePerKwh: 0.33,
   ptDailyCost: 5,
 }
 

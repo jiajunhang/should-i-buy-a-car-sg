@@ -123,15 +123,58 @@ export function Step1Car({ scenario }: Props) {
           </div>
         </div>
 
+        {/* Fuel type toggle */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <Label>Fuel Type</Label>
+            <Tooltip content="Select whether this car runs on petrol or electricity. This determines how energy costs are calculated.">
+              <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+            </Tooltip>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => updateCar(id, { fuelType: 'petrol' })}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                car.fuelType === 'petrol'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-accent'
+              }`}
+            >
+              Petrol
+            </button>
+            <button
+              onClick={() => updateCar(id, { fuelType: 'ev' })}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                car.fuelType === 'ev'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-accent'
+              }`}
+            >
+              Electric (EV)
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            label="Fuel Consumption"
-            tooltip="Kilometres per litre. sgCarMart may show this in the description, or estimate based on engine size. 12-14 km/L is typical for most sedans."
-            value={car.fuelEconomyKmPerL}
-            onChange={(v) => updateNumField('fuelEconomyKmPerL', v)}
-            suffix="km/L"
-            step={0.1}
-          />
+          {car.fuelType === 'petrol' ? (
+            <FormField
+              label="Fuel Consumption"
+              tooltip="Kilometres per litre. sgCarMart may show this in the description, or estimate based on engine size. 12-14 km/L is typical for most sedans."
+              value={car.fuelEconomyKmPerL}
+              onChange={(v) => updateNumField('fuelEconomyKmPerL', v)}
+              suffix="km/L"
+              step={0.1}
+            />
+          ) : (
+            <FormField
+              label="Energy Efficiency"
+              tooltip="Kilometres per kWh. Most EVs in Singapore achieve 5-7 km/kWh. Check your car's dashboard or specs."
+              value={car.evEfficiencyKmPerKwh}
+              onChange={(v) => updateNumField('evEfficiencyKmPerKwh', v)}
+              suffix="km/kWh"
+              step={0.1}
+            />
+          )}
           <FormField
             label="Annual Road Tax"
             tooltip="Found on sgCarMart listing page under 'Road Tax'. Or check LTA OneMotoring. Typical range: $500-$1,500/yr for most cars."

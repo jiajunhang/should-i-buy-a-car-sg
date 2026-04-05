@@ -27,7 +27,7 @@ export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
       'Road Tax': Math.round(carCosts.roadTaxMonthly),
       Insurance: Math.round(carCosts.insuranceMonthly),
       Parking: Math.round(carCosts.parkingMonthly),
-      Fuel: Math.round(carCosts.fuelCommuteMonthly),
+      Energy: Math.round(carCosts.fuelCommuteMonthly),
       'ERP': Math.round(carCosts.erpCashcardMonthly),
       'Maintenance': Math.round(carCosts.maintenanceMonthly),
     },
@@ -42,7 +42,7 @@ export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
     { name: 'Road Tax', value: Math.round(carCosts.roadTaxMonthly), color: CAR_COST_COLORS.roadTax },
     { name: 'Insurance', value: Math.round(carCosts.insuranceMonthly), color: CAR_COST_COLORS.insurance },
     { name: 'Parking', value: Math.round(carCosts.parkingMonthly), color: CAR_COST_COLORS.parking },
-    { name: 'Fuel', value: Math.round(carCosts.fuelCommuteMonthly), color: CAR_COST_COLORS.fuelCommute },
+    { name: 'Energy', value: Math.round(carCosts.fuelCommuteMonthly), color: CAR_COST_COLORS.fuelCommute },
     { name: 'ERP', value: Math.round(carCosts.erpCashcardMonthly), color: CAR_COST_COLORS.erp },
     { name: 'Maintenance', value: Math.round(carCosts.maintenanceMonthly), color: CAR_COST_COLORS.maintenance },
   ]
@@ -97,7 +97,7 @@ export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
               <Bar dataKey="Road Tax" stackId="a" fill={CAR_COST_COLORS.roadTax} />
               <Bar dataKey="Insurance" stackId="a" fill={CAR_COST_COLORS.insurance} />
               <Bar dataKey="Parking" stackId="a" fill={CAR_COST_COLORS.parking} />
-              <Bar dataKey="Fuel" stackId="a" fill={CAR_COST_COLORS.fuelCommute} />
+              <Bar dataKey="Energy" stackId="a" fill={CAR_COST_COLORS.fuelCommute} />
               <Bar dataKey="ERP" stackId="a" fill={CAR_COST_COLORS.erp} />
               <Bar dataKey="Maintenance" stackId="a" fill={CAR_COST_COLORS.maintenance} />
               <Bar dataKey="Transport" stackId="a" fill="#06b6d4" />

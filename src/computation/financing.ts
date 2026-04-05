@@ -1,5 +1,4 @@
 import type { CarInputs, FinancingInputs, FinancingComparison } from '@/types/scenario'
-import { getScrapValue } from '@/types/scenario'
 
 /**
  * Compute monthly loan repayment using Singapore flat-rate interest.
@@ -43,9 +42,8 @@ export function computeFinancingComparison(
 ): FinancingComparison {
   // Cash scenario
   const cashUpfront = car.purchasePrice
-  // Average capital tied up over car's life (depreciates from purchase to scrap)
-  const avgCashCapital = (car.purchasePrice + getScrapValue(car)) / 2
-  const cashOpportunityCostMonthly = avgCashCapital * (financing.cashInvestmentReturnPct / 100) / 12
+  // Full purchase price is out of your portfolio from day one
+  const cashOpportunityCostMonthly = car.purchasePrice * (financing.cashInvestmentReturnPct / 100) / 12
 
   // Loan scenario
   const loanUpfront = financing.loanDownPayment

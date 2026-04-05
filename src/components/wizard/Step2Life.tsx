@@ -126,15 +126,27 @@ export function Step2Life({ scenario }: Props) {
             />
           </div>
 
-          <FormField
-            label="Petrol price"
-            tooltip="Per litre. Check prevailing prices on motorist.sg."
-            value={lifestyle.petrolPricePerL}
-            onChange={(v) => updateField('petrolPricePerL', v)}
-            prefix="$"
-            suffix="/L"
-            step={0.01}
-          />
+          {scenario.car.fuelType === 'petrol' ? (
+            <FormField
+              label="Petrol price"
+              tooltip="Per litre. Check prevailing prices on motorist.sg."
+              value={lifestyle.petrolPricePerL}
+              onChange={(v) => updateField('petrolPricePerL', v)}
+              prefix="$"
+              suffix="/L"
+              step={0.01}
+            />
+          ) : (
+            <FormField
+              label="Electricity price"
+              tooltip="Per kWh. SP home charging: ~$0.33/kWh. Public chargers: $0.40-$0.60/kWh."
+              value={lifestyle.electricityPricePerKwh}
+              onChange={(v) => updateField('electricityPricePerKwh', v)}
+              prefix="$"
+              suffix="/kWh"
+              step={0.01}
+            />
+          )}
         </CardContent>
       </Card>
     </div>

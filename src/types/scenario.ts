@@ -1,10 +1,14 @@
+export type FuelType = 'petrol' | 'ev'
+
 export interface CarInputs {
   name: string
   purchasePrice: number
   annualDepreciation: number  // primary input from sgcarmart
   coeYears: number            // user input: years portion of COE remaining
   coeMonths: number           // user input: months portion of COE remaining
-  fuelEconomyKmPerL: number
+  fuelType: FuelType
+  fuelEconomyKmPerL: number   // petrol: km per litre
+  evEfficiencyKmPerKwh: number // EV: km per kWh
   annualInsurance: number
   annualRoadTax: number
   erpCashcardMonthly: number  // ERP + cashcard estimate
@@ -30,8 +34,9 @@ export interface LifestyleInputs {
   // Parking
   residentialParkingMonthly: number
   workplaceParkingMonthly: number
-  // Petrol
-  petrolPricePerL: number     // default RON95 ~3.40
+  // Energy costs
+  petrolPricePerL: number          // petrol: price per litre
+  electricityPricePerKwh: number   // EV: price per kWh
   // PT costs
   ptDailyCost: number         // average daily transport cost (MRT/bus/grab)
 }

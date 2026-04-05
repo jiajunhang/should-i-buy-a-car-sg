@@ -17,6 +17,10 @@ export function computeCoeMonths(car: CarInputs): number {
 
 export function computeCommuteFuelMonthly(car: CarInputs, lifestyle: LifestyleInputs): number {
   const commuteKmMonthly = lifestyle.commuteDistanceKmDaily * lifestyle.commuteDaysPerMonth
+  if (car.fuelType === 'ev') {
+    const kwhMonthly = commuteKmMonthly / car.evEfficiencyKmPerKwh
+    return kwhMonthly * lifestyle.electricityPricePerKwh
+  }
   const litresMonthly = commuteKmMonthly / car.fuelEconomyKmPerL
   return litresMonthly * lifestyle.petrolPricePerL
 }

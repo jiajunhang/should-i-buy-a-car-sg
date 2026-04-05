@@ -50,7 +50,11 @@ export function AssumptionsPanel({ scenario }: Props) {
             <Field label="Annual Depreciation" value={`${formatCurrency(car.annualDepreciation)}/yr`} />
             <Field label="COE Remaining" value={`${car.coeYears}y ${car.coeMonths}m (${coeMonths} months)`} />
             <Field label="Est. Scrap Value" value={formatCurrency(scrapValue)} />
-            <Field label="Fuel Consumption" value={`${car.fuelEconomyKmPerL} km/L`} />
+            <Field label="Fuel Type" value={car.fuelType === 'ev' ? 'Electric' : 'Petrol'} />
+            {car.fuelType === 'petrol'
+              ? <Field label="Fuel Consumption" value={`${car.fuelEconomyKmPerL} km/L`} />
+              : <Field label="Energy Efficiency" value={`${car.evEfficiencyKmPerKwh} km/kWh`} />
+            }
             <Field label="Road Tax" value={`${formatCurrency(car.annualRoadTax)}/yr`} />
             <Field label="Insurance" value={`${formatCurrency(car.annualInsurance)}/yr`} />
             <Field label="ERP / Cashcard" value={`${formatCurrency(car.erpCashcardMonthly)}/mo`} />
@@ -68,7 +72,10 @@ export function AssumptionsPanel({ scenario }: Props) {
             <Field label="Commute Days" value={`${lifestyle.commuteDaysPerMonth}/mo`} />
             <Field label="Residential Parking" value={`${formatCurrency(lifestyle.residentialParkingMonthly)}/mo`} />
             <Field label="Work Parking" value={`${formatCurrency(lifestyle.workplaceParkingMonthly)}/mo`} />
-            <Field label="Petrol" value={`$${lifestyle.petrolPricePerL.toFixed(2)}/L`} />
+            {car.fuelType === 'petrol'
+              ? <Field label="Petrol" value={`$${lifestyle.petrolPricePerL.toFixed(2)}/L`} />
+              : <Field label="Electricity" value={`$${lifestyle.electricityPricePerKwh.toFixed(2)}/kWh`} />
+            }
             <Field label="Avg. Daily Transport Cost" value={`$${lifestyle.ptDailyCost.toFixed(2)}/day`} />
           </section>
 
