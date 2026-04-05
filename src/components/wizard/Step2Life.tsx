@@ -2,9 +2,7 @@ import type { Scenario } from '@/types/scenario'
 import { useScenarioStore } from '@/store/scenarioStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
-import { Select } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
-import { MapPin, Clock } from 'lucide-react'
+import { MapPin, Clock, Car, TrainFront, Calendar } from 'lucide-react'
 
 interface Props {
   scenario: Scenario
@@ -33,45 +31,79 @@ export function Step2Life({ scenario }: Props) {
             Enter your estimated commute times. These are used to calculate the time-value comparison.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              label="Driving time (one-way)"
-              tooltip="Your estimated drive time from home to work, in minutes."
-              value={lifestyle.driveTimeMinutesOneWay}
-              onChange={(v) => updateField('driveTimeMinutesOneWay', v)}
-              suffix="mins"
-            />
-            <FormField
-              label="Public transport time (one-way)"
-              tooltip="Your estimated MRT/bus commute time from home to work, in minutes."
-              value={lifestyle.ptTimeMinutesOneWay}
-              onChange={(v) => updateField('ptTimeMinutesOneWay', v)}
-              suffix="mins"
-            />
+        <CardContent className="space-y-6">
+          {/* Driving sub-section */}
+          <div className="space-y-3">
+            <h4 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <Car className="h-4 w-4" />
+              Driving
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                label="Drive time (one-way)"
+                tooltip="Your estimated drive time from home to work, in minutes."
+                value={lifestyle.driveTimeMinutesOneWay}
+                onChange={(v) => updateField('driveTimeMinutesOneWay', v)}
+                suffix="mins"
+              />
+              <FormField
+                label="Driving distance (one-way)"
+                tooltip="Approximate driving distance from home to work. Used to calculate fuel costs."
+                value={lifestyle.commuteDistanceKm}
+                onChange={(v) => updateField('commuteDistanceKm', v)}
+                suffix="km"
+              />
+            </div>
           </div>
-          <FormField
-            label="Commute distance (one-way)"
-            tooltip="Approximate driving distance. Used to calculate fuel costs."
-            value={lifestyle.commuteDistanceKm}
-            onChange={(v) => updateField('commuteDistanceKm', v)}
-            suffix="km"
-          />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              label="Work days per month"
-              value={lifestyle.workDaysPerMonth}
-              onChange={(v) => updateField('workDaysPerMonth', v)}
-              suffix="days"
-            />
-            <FormField
-              label="WFH days per month"
-              tooltip="Days you work from home. Reduces both commute costs and time value."
-              value={lifestyle.wfhDaysPerMonth}
-              onChange={(v) => updateField('wfhDaysPerMonth', v)}
-              suffix="days"
-            />
+          {/* Public transport sub-section */}
+          <div className="space-y-3">
+            <h4 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <TrainFront className="h-4 w-4" />
+              Public Transport
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                label="Transport time (one-way)"
+                tooltip="Your estimated MRT/bus/grab commute time from home to work, in minutes."
+                value={lifestyle.ptTimeMinutesOneWay}
+                onChange={(v) => updateField('ptTimeMinutesOneWay', v)}
+                suffix="mins"
+              />
+              <FormField
+                label="Average daily transport cost"
+                tooltip="Your average round-trip cost by public transport (MRT, bus, or grab). Put in a rough estimate — it doesn't need to be exact."
+                value={lifestyle.ptDailyCost}
+                onChange={(v) => updateField('ptDailyCost', v)}
+                prefix="$"
+                suffix="/day"
+                step={0.1}
+              />
+            </div>
+          </div>
+
+          {/* Work schedule */}
+          <div className="space-y-3">
+            <h4 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              Work Schedule
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                label="Work days per month"
+                tooltip="Used to compute monthly commute costs and time value. Typical: 21-22 days."
+                value={lifestyle.workDaysPerMonth}
+                onChange={(v) => updateField('workDaysPerMonth', v)}
+                suffix="days"
+              />
+              <FormField
+                label="WFH days per month"
+                tooltip="Days you work from home. Reduces both commute costs and time value."
+                value={lifestyle.wfhDaysPerMonth}
+                onChange={(v) => updateField('wfhDaysPerMonth', v)}
+                suffix="days"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -84,7 +116,7 @@ export function Step2Life({ scenario }: Props) {
             Running Costs
           </CardTitle>
           <CardDescription>
-            Parking, fuel, and public transport costs. Defaults are typical Singapore values.
+            Parking, fuel, and weekend driving costs. Defaults are typical Singapore values.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -99,7 +131,7 @@ export function Step2Life({ scenario }: Props) {
             />
             <FormField
               label="Workplace Parking"
-              tooltip="Monthly season parking at work. MBC entitled: ~$196/mo. Commercial: varies."
+              tooltip="Monthly season parking at work. Varies by location — check with your office building management."
               value={lifestyle.workplaceParkingMonthly}
               onChange={(v) => updateField('workplaceParkingMonthly', v)}
               prefix="$"
@@ -110,7 +142,7 @@ export function Step2Life({ scenario }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               label="Petrol price"
-              tooltip="Per litre. RON95 ~$3.40/L, RON97 ~$3.92/L."
+              tooltip="Per litre. Check prevailing prices on motorist.sg."
               value={lifestyle.petrolPricePerL}
               onChange={(v) => updateField('petrolPricePerL', v)}
               prefix="$"
@@ -124,51 +156,6 @@ export function Step2Life({ scenario }: Props) {
               onChange={(v) => updateField('weekendMileageKm', v)}
               suffix="km/mo"
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Primary public transport mode</Label>
-            <Select
-              value={lifestyle.ptMode}
-              onChange={(e) => updateLifestyle(id, { ptMode: e.target.value as 'mrt' | 'grab' | 'mixed' })}
-            >
-              <option value="mrt">MRT / Bus only</option>
-              <option value="grab">Grab / Private hire only</option>
-              <option value="mixed">Mixed (MRT + some Grab)</option>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(lifestyle.ptMode === 'mrt' || lifestyle.ptMode === 'mixed') && (
-              <FormField
-                label="MRT/Bus daily cost"
-                tooltip="Round-trip cost per day by public transport."
-                value={lifestyle.mrtDailyCost}
-                onChange={(v) => updateField('mrtDailyCost', v)}
-                prefix="$"
-                suffix="/day"
-                step={0.1}
-              />
-            )}
-            {(lifestyle.ptMode === 'grab' || lifestyle.ptMode === 'mixed') && (
-              <FormField
-                label="Grab cost per trip"
-                tooltip="Average one-way Grab fare for your commute."
-                value={lifestyle.grabCostPerTrip}
-                onChange={(v) => updateField('grabCostPerTrip', v)}
-                prefix="$"
-                suffix="/trip"
-              />
-            )}
-            {lifestyle.ptMode === 'mixed' && (
-              <FormField
-                label="Grab trips per month"
-                tooltip="How many days per month you take Grab instead of MRT."
-                value={lifestyle.grabTripsPerMonth}
-                onChange={(v) => updateField('grabTripsPerMonth', v)}
-                suffix="trips"
-              />
-            )}
           </div>
         </CardContent>
       </Card>

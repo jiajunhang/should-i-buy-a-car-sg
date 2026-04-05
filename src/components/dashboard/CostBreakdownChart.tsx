@@ -2,6 +2,7 @@ import type { CarCostBreakdown, PTCostBreakdown } from '@/types/scenario'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
+import { BarChart3, Scale } from 'lucide-react'
 
 interface Props {
   carCosts: CarCostBreakdown
@@ -29,8 +30,7 @@ export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
     },
     {
       name: 'Public Transport',
-      'MRT/Bus': Math.round(ptCosts.mrtBusMonthly),
-      Grab: Math.round(ptCosts.grabMonthly),
+      'Transport': Math.round(ptCosts.ptMonthly),
     },
   ]
 
@@ -49,7 +49,10 @@ export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Monthly Car Cost Breakdown</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Monthly Car Cost Breakdown
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={barData.length * 50 + 40}>
@@ -82,7 +85,10 @@ export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Car vs Public Transport</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Scale className="h-5 w-5" />
+            Car vs Public Transport
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={200}>
@@ -97,8 +103,7 @@ export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
               <Bar dataKey="Insurance" stackId="a" fill={CAR_COST_COLORS.insurance} />
               <Bar dataKey="Parking" stackId="a" fill={CAR_COST_COLORS.parking} />
               <Bar dataKey="Fuel (commute)" stackId="a" fill={CAR_COST_COLORS.fuelCommute} />
-              <Bar dataKey="MRT/Bus" stackId="a" fill="#06b6d4" />
-              <Bar dataKey="Grab" stackId="a" fill="#d946ef" />
+              <Bar dataKey="Transport" stackId="a" fill="#06b6d4" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

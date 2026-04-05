@@ -4,7 +4,6 @@ import { useScenarioStore } from '@/store/scenarioStore'
 import { computeFinancingComparison } from '@/computation/financing'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
-import { Input } from '@/components/ui/input'
 import { formatCurrency } from '@/lib/utils'
 import { Landmark, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -13,42 +12,28 @@ interface Props {
   scenario: Scenario
 }
 
-function SliderWithInput({
+function SliderControl({
   label,
   value,
+  displayValue,
   onChange,
   min,
   max,
   step,
-  suffix,
 }: {
   label: string
   value: number
+  displayValue: string
   onChange: (v: number) => void
   min: number
   max: number
   step: number
-  suffix?: string
 }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-4">
         <span className="text-sm">{label}</span>
-        <div className="flex items-center gap-1.5">
-          <Input
-            type="number"
-            value={value}
-            onChange={(e) => {
-              const v = parseFloat(e.target.value)
-              if (!isNaN(v)) onChange(Math.min(max, Math.max(min, v)))
-            }}
-            className="w-24 h-8 text-sm text-right"
-            min={min}
-            max={max}
-            step={step}
-          />
-          {suffix && <span className="text-xs text-muted-foreground whitespace-nowrap">{suffix}</span>}
-        </div>
+        <span className="text-sm font-semibold">{displayValue}</span>
       </div>
       <Slider
         value={[value]}
@@ -119,9 +104,9 @@ export function FinancingOverlay({ scenario }: Props) {
   )
 
   const verdictText = comparison.financingAdvantage === 'loan'
-    ? `Taking a loan saves ~${formatCurrency(comparison.monthlySavings)}/mo in financing costs vs paying cash.`
+    ? `Taking a loan is better — saves ~${formatCurrency(comparison.monthlySavings)}/mo in effective financing costs.`
     : comparison.financingAdvantage === 'cash'
-      ? `Paying cash saves ~${formatCurrency(comparison.monthlySavings)}/mo in financing costs vs a loan.`
+      ? `Paying in full cash is better — saves ~${formatCurrency(comparison.monthlySavings)}/mo in effective financing costs.`
       : 'Cash and loan are roughly equivalent in financing cost.'
 
   const verdictExplanation = comparison.financingAdvantage === 'loan'
@@ -157,34 +142,34 @@ export function FinancingOverlay({ scenario }: Props) {
         <ComparisonTable financing={comparison} />
 
         {/* Interactive sliders */}
-        <div className="space-y-4 pt-4 border-t">
+        <div className="space-y-4 pt-4 border-t" data-print-hide>
           <h4 className="text-sm font-semibold text-muted-foreground">Adjust financing variables</h4>
-          <SliderWithInput
+          <SliderControl
             label="Investment Return Rate"
             value={fin.cashInvestmentReturnPct}
+            displayValue={`${fin.cashInvestmentReturnPct}% p.a.`}
             onChange={(v) => updateFinancing(id, { cashInvestmentReturnPct: v })}
             min={0}
             max={10}
             step={0.1}
-            suffix="% p.a."
           />
-          <SliderWithInput
+          <SliderControl
             label="Loan Interest Rate"
             value={fin.loanInterestRatePct}
+            displayValue={`${fin.loanInterestRatePct}% p.a.`}
             onChange={(v) => updateFinancing(id, { loanInterestRatePct: v })}
             min={0}
             max={6}
             step={0.01}
-            suffix="% p.a."
           />
-          <SliderWithInput
+          <SliderControl
             label="Down Payment"
             value={fin.loanDownPayment}
+            displayValue={formatCurrency(fin.loanDownPayment)}
             onChange={(v) => updateFinancing(id, { loanDownPayment: v })}
             min={0}
             max={car.purchasePrice}
             step={1000}
-            suffix=""
           />
         </div>
       </CardContent>

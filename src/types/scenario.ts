@@ -35,10 +35,7 @@ export interface LifestyleInputs {
   // Petrol
   petrolPricePerL: number     // default RON95 ~3.40
   // PT costs
-  mrtDailyCost: number        // default ~4.30
-  grabCostPerTrip: number     // default ~25
-  ptMode: 'mrt' | 'grab' | 'mixed'
-  grabTripsPerMonth: number   // for mixed mode
+  ptDailyCost: number         // average daily transport cost (MRT/bus/grab)
 }
 
 export interface CompensationInputs {
@@ -79,8 +76,7 @@ export interface CarCostBreakdown {
 }
 
 export interface PTCostBreakdown {
-  mrtBusMonthly: number
-  grabMonthly: number
+  ptMonthly: number
   totalMonthly: number
 }
 

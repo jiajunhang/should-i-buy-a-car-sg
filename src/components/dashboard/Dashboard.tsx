@@ -9,6 +9,8 @@ import { TimeValuePanel } from './TimeValuePanel'
 import { InteractiveSliders } from './InteractiveSliders'
 import { SensitivityChart } from './SensitivityChart'
 import { FinancingOverlay } from './FinancingOverlay'
+import { Button } from '@/components/ui/button'
+import { Printer } from 'lucide-react'
 
 interface Props {
   scenario: Scenario
@@ -19,6 +21,18 @@ export function Dashboard({ scenario }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Export button */}
+      <div className="flex justify-end" data-print-hide>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => window.print()}
+        >
+          <Printer className="h-4 w-4 mr-2" />
+          Export PDF
+        </Button>
+      </div>
+
       {/* Verdict */}
       <InequalityVerdict analysis={analysis} />
 
@@ -26,7 +40,9 @@ export function Dashboard({ scenario }: Props) {
       <AssumptionsPanel scenario={scenario} />
 
       {/* Interactive sliders */}
-      <InteractiveSliders scenario={scenario} />
+      <div data-print-hide>
+        <InteractiveSliders scenario={scenario} />
+      </div>
 
       {/* Break-even + Time value side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

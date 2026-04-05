@@ -92,3 +92,28 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
+
+@media print {
+  /* Force light background for printing */
+  html, body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide interactive/nav elements */
+  [data-print-hide] {
+    display: none !important;
+  }
+
+  /* Expand collapsible panels */
+  [data-print-expand] {
+    display: block !important;
+  }
+
+  /* Avoid page breaks inside cards */
+  .rounded-lg, .rounded-md {
+    break-inside: avoid;
+  }
+}

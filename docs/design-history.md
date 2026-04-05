@@ -190,3 +190,116 @@ Scenario {
 
 - **Removed:** React Router v6 (no longer needed — single-page tab-based architecture)
 - Rest unchanged from v2
+
+---
+
+## V3.1 — Presentation Polish (2026-04-05)
+
+First polish pass before real user testing. Focus: label clarity, tooltip improvements, removing confusing PT mode options, dark mode, slider UX.
+
+### Changes
+
+**Wizard Step 1 (Car Details):**
+- sgCarMart hyperlink on purchase price field
+- Car name tooltip
+- "Fuel Economy" → "Fuel Consumption" label rename
+- Improved tooltips for road tax and insurance (NCD guidance)
+
+**Wizard Step 2 (Commute & Lifestyle):**
+- Removed PT mode selector (grab/mixed modes) entirely — simplified to single `ptDailyCost` field
+- Label: "Average daily transport cost (MRT/bus/grab)"
+- Work days tooltip, petrol tooltip (motorist.sg reference)
+- Updated defaults: road tax $700, workplace parking $200, petrol $3.00/L, daily transport $5
+
+**Wizard Step 3 (Income & Financing):**
+- Annual comp tooltip rewritten to explain "why" (time value calculation)
+- Loan tenure auto-clamp bug fix: when COE months < 84, `loanTenureMonths` was not being clamped
+
+**Dashboard:**
+- Removed `SliderWithInput` (textbox was confusing due to slider binding). Replaced with `SliderControl` (display-only value)
+- Dark mode toggle in header (CSS class toggle on `<html>`, persists to localStorage)
+- Simplified PT cost chart from MRT/Bus + Grab bars to single "Transport" bar
+
+### Data Model Changes
+
+```typescript
+// REMOVED from LifestyleInputs: grabCostPerTrip, ptMode, grabTripsPerMonth, mrtDailyCost
+// ADDED to LifestyleInputs: ptDailyCost (replaces all PT cost fields)
+// PTCostBreakdown simplified: { ptMonthly, totalMonthly }
+```
+
+---
+
+## V3.2 — Bug Fixes, Read-Only Params, Testing (2026-04-05)
+
+Second polish pass addressing bugs found during hands-on testing. Focus: data binding correctness, removing mutation surfaces that cause inconsistencies, unit test coverage.
+
+### Changes
+
+#### Bug Fixes
+
+**1. Loan tenure auto-set on COE change**
+- Problem: `updateCar` only clamped tenure downward (`Math.min`). Changing COE from 60 → 72 months left tenure stuck at 60.
+- Fix: when `coeYears` or `coeMonths` changes, always set tenure to `min(newCoeMonths, 84)` instead of just clamping. Predictable and deterministic.
+
+**2. WFH slider max not bound to work days**
+- Problem: WFH days slider had hardcoded `max={21}` instead of reading from `scenario.lifestyle.workDaysPerMonth`.
+- Fix: `max={scenario.lifestyle.workDaysPerMonth}`.
+
+#### Preventing Data Binding Bugs
+
+**3. Input Parameters panel → read-only**
+- Problem: Editable fields on the dashboard created a hidden binding problem. Changing work days in the Assumptions panel didn't update the WFH slider limits. Other similar subtle dependencies likely exist.
+- Decision: lock the panel to display-only. The wizard is for data entry; dashboard sliders are for exploration. To change fundamentals, duplicate the scenario and re-run the wizard.
+- Implementation: replaced all `<FormField>` inputs with a simple `Field` component (label + formatted value). Removed all `updateCar/updateLifestyle/updateCompensation/updateFinancing` calls from the panel.
+
+**4. Remove tab double-click rename**
+- Problem: Renaming via tab wasn't bound to `car.name`, creating inconsistency (tab name diverges from car name field).
+- Fix: removed `onDoubleClick` rename entirely. Tab name is always derived from `car.name` via the store's `scenarioName()` helper. One-way binding, no inconsistency possible.
+
+#### Presentation
+
+**5. Page title**
+- "Vite + React + TS" → "Should I Buy a Car? — Singapore"
+
+**6. Wizard commute section restructured**
+- Problem: Commute distance (one-way) appeared as a wide field spanning both columns, making it unclear whether it referred to driving or PT distance.
+- Fix: split the Commute Time card into three sub-sections with icons: **Driving** (drive time + driving distance), **Public Transport** (PT time + daily cost), **Work Schedule** (work days + WFH days). Clear visual separation.
+
+**7. Chart header icons**
+- Added missing icons to three chart cards for consistency:
+  - Monthly Car Cost Breakdown → `BarChart3`
+  - Car vs Public Transport → `Scale`
+  - Sensitivity → `TrendingUp`
+
+**8. Financing verdict wording**
+- "Paying cash saves ~$X/mo..." → "Paying in full cash is better — saves ~$X/mo..."
+- "Taking a loan saves ~$X/mo..." → "Taking a loan is better — saves ~$X/mo..."
+- Clearer — avoids ambiguity about what "paying cash" means in a loan context.
+
+#### Testing
+
+**9. Vitest unit test suite (NEW)**
+- Added `vitest` (v2.x) as dev dependency with `npm test` and `npm run test:watch` scripts.
+- 54 tests across 6 test files covering the entire computation layer:
+  - `carCosts.test.ts` — depreciation, fuel, parking, scrap value, COE months, cost totals
+  - `ptCosts.test.ts` — daily cost × commute days, WFH reduction
+  - `timeValue.test.ts` — cost per minute, time savings, salary/WFH sensitivity
+  - `breakEven.test.ts` — break-even salary existence, edge cases (no time savings, car cheaper)
+  - `financing.test.ts` — loan amortisation, cash vs loan comparison, edge cases
+  - `analysis.test.ts` — full scenario analysis, verdict thresholds, net gap computation
+- All pure functions, no React dependencies. Runs in <400ms.
+
+### Data Model (end of v3.2)
+
+No schema changes from v3.1. Same `Scenario` type.
+
+### Deferred to V4+
+
+- OneMap API integration (postal code → commute time)
+- sgCarMart URL paste → auto-populate car details
+- Weekend mileage presentation review
+- Live petrol price fetch
+- Car comparison mode (multi-car side-by-side)
+- Copy/export summary feature
+- Grab/mixed transport modes (removed in v3.1, may revisit with better UX)

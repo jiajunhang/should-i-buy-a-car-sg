@@ -5,6 +5,7 @@ import { computePTCosts } from '@/computation/ptCosts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
+import { TrendingUp } from 'lucide-react'
 
 interface Props {
   scenario: Scenario
@@ -36,7 +37,10 @@ export function SensitivityChart({ scenario }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Sensitivity: Annual Salary vs Monthly Gap</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <TrendingUp className="h-5 w-5" />
+          Sensitivity: Annual Salary vs Monthly Gap
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>

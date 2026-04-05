@@ -8,7 +8,7 @@ export const DEFAULT_CAR: CarInputs = {
   coeMonths: 0,
   fuelEconomyKmPerL: 13.0,
   annualInsurance: 3000,
-  annualRoadTax: 742,
+  annualRoadTax: 700,
 }
 
 export const DEFAULT_LIFESTYLE: LifestyleInputs = {
@@ -19,12 +19,9 @@ export const DEFAULT_LIFESTYLE: LifestyleInputs = {
   wfhDaysPerMonth: 0,
   weekendMileageKm: 100,
   hdbSeasonParkingMonthly: 110,
-  workplaceParkingMonthly: 196,
-  petrolPricePerL: 3.40,
-  mrtDailyCost: 4.30,
-  grabCostPerTrip: 25,
-  ptMode: 'mrt',
-  grabTripsPerMonth: 4,
+  workplaceParkingMonthly: 200,
+  petrolPricePerL: 3.00,
+  ptDailyCost: 5,
 }
 
 export const DEFAULT_COMPENSATION: CompensationInputs = {

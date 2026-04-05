@@ -37,7 +37,7 @@ export function Step3Comp({ scenario }: Props) {
         <CardContent className="space-y-4">
           <FormField
             label="Annual Total Compensation"
-            tooltip="Base salary + bonus + stock + any other cash compensation, before tax."
+            tooltip="Used to compute the value of your time, which determines whether commute time savings outweigh the financial cost of car ownership. Feel free to use gross, net, or whatever figure you feel best represents your earning rate."
             value={compensation.annualTotalComp}
             onChange={(v) => {
               const val = v === '' ? 0 : parseFloat(v)

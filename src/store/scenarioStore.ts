@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Scenario, CarInputs, LifestyleInputs, CompensationInputs, FinancingInputs } from '@/types/scenario'
+import { getCoeMonthsRemaining } from '@/types/scenario'
 import { DEFAULT_CAR, DEFAULT_LIFESTYLE, DEFAULT_COMPENSATION, DEFAULT_FINANCING } from '@/computation/defaults'
 
 interface ScenarioStore {
@@ -111,7 +112,13 @@ export const useScenarioStore = create<ScenarioStore>()(
           scenarios: state.scenarios.map(s => {
             if (s.id !== id) return s
             const updatedCar = { ...s.car, ...car }
-            return { ...s, car: updatedCar, name: scenarioName(updatedCar) }
+            // Auto-set loan tenure to max allowed when COE changes
+            const coeChanged = car.coeYears !== undefined || car.coeMonths !== undefined
+            const maxLoan = Math.min(getCoeMonthsRemaining(updatedCar), 84)
+            const updatedFinancing = coeChanged
+              ? { ...s.financing, loanTenureMonths: maxLoan }
+              : s.financing
+            return { ...s, car: updatedCar, financing: updatedFinancing, name: scenarioName(updatedCar) }
           }),
         }))
       },

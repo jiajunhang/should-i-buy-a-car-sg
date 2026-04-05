@@ -32,7 +32,15 @@ export function Step1Car({ scenario }: Props) {
           Car Details
         </CardTitle>
         <CardDescription>
-          Enter the car details you're considering. You can find these on the sgCarMart listing page.
+          Enter the car details you're considering. You can find these on{' '}
+          <a
+            href="https://www.sgcarmart.com/used-cars"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-primary hover:text-primary/80"
+          >
+            sgCarMart
+          </a>.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -41,6 +49,7 @@ export function Step1Car({ scenario }: Props) {
           type="text"
           value={car.name}
           onChange={(v) => updateCar(id, { name: v })}
+          tooltip="Used to label your scenario tab. Has no effect on calculations."
           placeholder="e.g. Audi A4 2.0L B9.5"
         />
 
@@ -99,8 +108,8 @@ export function Step1Car({ scenario }: Props) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
-            label="Fuel Economy"
-            tooltip="Kilometres per litre. Found on sgCarMart as 'Fuel Consumption'. Lower = more expensive to run."
+            label="Fuel Consumption"
+            tooltip="Kilometres per litre. sgCarMart may show this in the description, or estimate based on engine size. 12-14 km/L is typical for most sedans."
             value={car.fuelEconomyKmPerL}
             onChange={(v) => updateNumField('fuelEconomyKmPerL', v)}
             suffix="km/L"
@@ -108,7 +117,7 @@ export function Step1Car({ scenario }: Props) {
           />
           <FormField
             label="Annual Road Tax"
-            tooltip="Found on sgCarMart listing page under 'Road Tax'. Or check LTA OneMotoring."
+            tooltip="Found on sgCarMart listing page under 'Road Tax'. Or check LTA OneMotoring. Typical range: $500-$1,500/yr for most cars."
             value={car.annualRoadTax}
             onChange={(v) => updateNumField('annualRoadTax', v)}
             prefix="$"
@@ -118,7 +127,7 @@ export function Step1Car({ scenario }: Props) {
 
         <FormField
           label="Annual Insurance"
-          tooltip="Varies by car model, driver age, NCD. Get a quote from DirectAsia, FWD, or your insurer. Typical: $2k-$5k/yr."
+          tooltip="Varies by car model, driver age, and NCD. Get a quote from FWD, DirectAsia, or your insurer. New drivers without NCD typically pay $3k-$4k. Experienced drivers (50% NCD) may pay $1k-$2k."
           value={car.annualInsurance}
           onChange={(v) => updateNumField('annualInsurance', v)}
           prefix="$"
