@@ -1,15 +1,34 @@
 import { describe, it, expect } from 'vitest'
-import { computeLoanRepaymentMonthly, computeFinancingComparison } from '../financing'
+import { computeLoanRepaymentMonthly, computeFlatRateInterest, computeFinancingComparison } from '../financing'
 import { DEFAULT_CAR, DEFAULT_FINANCING } from '../defaults'
 import type { CarInputs, FinancingInputs } from '@/types/scenario'
 
+describe('computeFlatRateInterest', () => {
+  it('matches sgCarMart example: 126800 principal, 2.48%, 84 months', () => {
+    // 126800 × 2.48% × 7 years = 22,012.48
+    const interest = computeFlatRateInterest(126800, 2.48, 84)
+    expect(interest).toBeCloseTo(22012.48, 0)
+  })
+
+  it('returns zero for zero principal', () => {
+    expect(computeFlatRateInterest(0, 2.78, 84)).toBe(0)
+  })
+
+  it('returns zero for zero tenure', () => {
+    expect(computeFlatRateInterest(100000, 2.78, 0)).toBe(0)
+  })
+
+  it('scales linearly with rate', () => {
+    const low = computeFlatRateInterest(100000, 2.0, 84)
+    const high = computeFlatRateInterest(100000, 4.0, 84)
+    expect(high).toBeCloseTo(low * 2)
+  })
+})
+
 describe('computeLoanRepaymentMonthly', () => {
-  it('computes standard amortisation', () => {
-    // 100k loan, 2.78% p.a., 84 months
-    const result = computeLoanRepaymentMonthly(100000, 2.78, 84)
-    // Should be roughly $1,300-1,400/mo
-    expect(result).toBeGreaterThan(1200)
-    expect(result).toBeLessThan(1500)
+  it('matches sgCarMart example: 126800 principal, 2.48%, 84 months → ~1772/mo', () => {
+    const result = computeLoanRepaymentMonthly(126800, 2.48, 84)
+    expect(result).toBeCloseTo(1772, 0)
   })
 
   it('returns zero for zero principal', () => {
@@ -41,8 +60,9 @@ describe('computeFinancingComparison', () => {
   const car: CarInputs = { ...DEFAULT_CAR }
   const fin: FinancingInputs = { ...DEFAULT_FINANCING }
 
-  it('loan advantage when investment return > loan rate', () => {
-    const highReturn = { ...fin, cashInvestmentReturnPct: 7.0, loanInterestRatePct: 2.78 }
+  it('loan advantage when investment return greatly exceeds flat rate', () => {
+    // Flat rate 1% → ~2% EIR, vs 10% investment return — loan clearly wins
+    const highReturn = { ...fin, cashInvestmentReturnPct: 10.0, loanInterestRatePct: 1.0 }
     const result = computeFinancingComparison(car, highReturn)
     expect(result.financingAdvantage).toBe('loan')
     expect(result.monthlySavings).toBeGreaterThan(0)
@@ -55,10 +75,8 @@ describe('computeFinancingComparison', () => {
   })
 
   it('neutral when both costs are within threshold', () => {
-    // With full cash down payment and zero interest, both effective costs are just opportunity cost
     const similar = { ...fin, cashInvestmentReturnPct: 0, loanInterestRatePct: 0, loanDownPayment: car.purchasePrice }
     const result = computeFinancingComparison(car, similar)
-    // Both opportunity costs are zero, so diff < 5 → neutral
     expect(result.financingAdvantage).toBe('neutral')
   })
 
@@ -82,5 +100,18 @@ describe('computeFinancingComparison', () => {
     const result = computeFinancingComparison(car, fullCash)
     expect(result.loanMonthlyRepayment).toBe(0)
     expect(result.loanTotalInterest).toBe(0)
+  })
+
+  it('matches sgCarMart for real-world example', () => {
+    const testCar: CarInputs = { ...car, purchasePrice: 206800 }
+    const testFin: FinancingInputs = {
+      cashInvestmentReturnPct: 4.0,
+      loanDownPayment: 80000,
+      loanInterestRatePct: 2.48,
+      loanTenureMonths: 84,
+    }
+    const result = computeFinancingComparison(testCar, testFin)
+    expect(result.loanMonthlyRepayment).toBeCloseTo(1772, 0)
+    expect(result.loanTotalInterest).toBeCloseTo(22012, 0)
   })
 })

@@ -12,11 +12,11 @@ export function analyseScenario(scenario: Scenario): AnalysisResult {
   const financing = computeFinancingComparison(scenario.car, scenario.financing)
 
   // Use commute-only car cost for the inequality comparison
-  const netGapWithoutTime = ptCosts.totalMonthly - carCosts.totalCommuteMonthly
+  const netGapWithoutTime = ptCosts.totalMonthly - carCosts.totalMonthly
   const netGapWithTime = netGapWithoutTime + timeValue.timeSavingsValueMonthly
 
   const breakEvenSalary = computeBreakEvenSalary(
-    carCosts.totalCommuteMonthly,
+    carCosts.totalMonthly,
     ptCosts.totalMonthly,
     scenario.lifestyle,
     scenario.compensation,

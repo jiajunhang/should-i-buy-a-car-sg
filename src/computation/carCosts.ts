@@ -22,11 +22,6 @@ export function computeCommuteFuelMonthly(car: CarInputs, lifestyle: LifestyleIn
   return litresMonthly * lifestyle.petrolPricePerL
 }
 
-export function computeWeekendFuelMonthly(car: CarInputs, lifestyle: LifestyleInputs): number {
-  const litresMonthly = lifestyle.weekendMileageKm / car.fuelEconomyKmPerL
-  return litresMonthly * lifestyle.petrolPricePerL
-}
-
 export function computeParkingMonthly(lifestyle: LifestyleInputs): number {
   return lifestyle.hdbSeasonParkingMonthly + lifestyle.workplaceParkingMonthly
 }
@@ -40,11 +35,9 @@ export function computeCarCosts(
   const insuranceMonthly = car.annualInsurance / 12
   const parkingMonthly = computeParkingMonthly(lifestyle)
   const fuelCommuteMonthly = computeCommuteFuelMonthly(car, lifestyle)
-  const fuelWeekendMonthly = computeWeekendFuelMonthly(car, lifestyle)
 
-  const totalCommuteMonthly = depreciationMonthly + roadTaxMonthly + insuranceMonthly +
+  const totalMonthly = depreciationMonthly + roadTaxMonthly + insuranceMonthly +
     parkingMonthly + fuelCommuteMonthly
-  const totalOwnershipMonthly = totalCommuteMonthly + fuelWeekendMonthly
 
   return {
     depreciationMonthly,
@@ -52,8 +45,6 @@ export function computeCarCosts(
     insuranceMonthly,
     parkingMonthly,
     fuelCommuteMonthly,
-    fuelWeekendMonthly,
-    totalCommuteMonthly,
-    totalOwnershipMonthly,
+    totalMonthly,
   }
 }

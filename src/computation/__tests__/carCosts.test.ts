@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computeCarCosts, computeDepreciationMonthly, computeCommuteFuelMonthly, computeWeekendFuelMonthly, computeParkingMonthly, computeScrapValue, computeCoeMonths } from '../carCosts'
+import { computeCarCosts, computeDepreciationMonthly, computeCommuteFuelMonthly, computeParkingMonthly, computeScrapValue, computeCoeMonths } from '../carCosts'
 import { DEFAULT_CAR, DEFAULT_LIFESTYLE } from '../defaults'
 import type { CarInputs, LifestyleInputs } from '@/types/scenario'
 
@@ -69,17 +69,6 @@ describe('computeCommuteFuelMonthly', () => {
   })
 })
 
-describe('computeWeekendFuelMonthly', () => {
-  it('computes for default scenario', () => {
-    // 100 / 13 * 3.00 = 23.08
-    expect(computeWeekendFuelMonthly(car, lifestyle)).toBeCloseTo(23.08, 1)
-  })
-
-  it('returns zero when no weekend mileage', () => {
-    expect(computeWeekendFuelMonthly(car, { ...lifestyle, weekendMileageKm: 0 })).toBe(0)
-  })
-})
-
 describe('computeParkingMonthly', () => {
   it('sums HDB and workplace parking', () => {
     expect(computeParkingMonthly(lifestyle)).toBe(110 + 200)
@@ -87,16 +76,11 @@ describe('computeParkingMonthly', () => {
 })
 
 describe('computeCarCosts', () => {
-  it('totalCommuteMonthly excludes weekend fuel', () => {
+  it('totalMonthly sums all components', () => {
     const result = computeCarCosts(car, lifestyle)
-    const expectedCommute = result.depreciationMonthly + result.roadTaxMonthly +
+    const expected = result.depreciationMonthly + result.roadTaxMonthly +
       result.insuranceMonthly + result.parkingMonthly + result.fuelCommuteMonthly
-    expect(result.totalCommuteMonthly).toBeCloseTo(expectedCommute)
-  })
-
-  it('totalOwnershipMonthly includes weekend fuel', () => {
-    const result = computeCarCosts(car, lifestyle)
-    expect(result.totalOwnershipMonthly).toBeCloseTo(result.totalCommuteMonthly + result.fuelWeekendMonthly)
+    expect(result.totalMonthly).toBeCloseTo(expected)
   })
 
   it('all cost components are non-negative', () => {
@@ -106,6 +90,5 @@ describe('computeCarCosts', () => {
     expect(result.insuranceMonthly).toBeGreaterThanOrEqual(0)
     expect(result.parkingMonthly).toBeGreaterThanOrEqual(0)
     expect(result.fuelCommuteMonthly).toBeGreaterThanOrEqual(0)
-    expect(result.fuelWeekendMonthly).toBeGreaterThanOrEqual(0)
   })
 })

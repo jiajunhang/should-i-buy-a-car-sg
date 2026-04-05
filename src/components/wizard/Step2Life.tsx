@@ -139,24 +139,15 @@ export function Step2Life({ scenario }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              label="Petrol price"
-              tooltip="Per litre. Check prevailing prices on motorist.sg."
-              value={lifestyle.petrolPricePerL}
-              onChange={(v) => updateField('petrolPricePerL', v)}
-              prefix="$"
-              suffix="/L"
-              step={0.01}
-            />
-            <FormField
-              label="Weekend mileage"
-              tooltip="Extra km driven on weekends per month. Shown separately for budgeting — not included in the commute comparison."
-              value={lifestyle.weekendMileageKm}
-              onChange={(v) => updateField('weekendMileageKm', v)}
-              suffix="km/mo"
-            />
-          </div>
+          <FormField
+            label="Petrol price"
+            tooltip="Per litre. Check prevailing prices on motorist.sg."
+            value={lifestyle.petrolPricePerL}
+            onChange={(v) => updateField('petrolPricePerL', v)}
+            prefix="$"
+            suffix="/L"
+            step={0.01}
+          />
         </CardContent>
       </Card>
     </div>

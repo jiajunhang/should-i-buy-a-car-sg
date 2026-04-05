@@ -53,7 +53,7 @@ describe('analyseScenario', () => {
   it('netGapWithoutTime is PT cost minus car commute cost', () => {
     const result = analyseScenario(makeScenario())
     expect(result.netGapWithoutTime).toBeCloseTo(
-      result.ptCosts.totalMonthly - result.carCosts.totalCommuteMonthly
+      result.ptCosts.totalMonthly - result.carCosts.totalMonthly
     )
   })
 

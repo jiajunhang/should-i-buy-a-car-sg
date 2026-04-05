@@ -24,7 +24,7 @@ export function SensitivityChart({ scenario }: Props) {
     for (let salary = 50000; salary <= 500000; salary += 10000) {
       const costPerMin = salary / (12 * hoursPerDay * 60 * scenario.lifestyle.workDaysPerMonth)
       const timeSavingsValue = timeDiffMin * commuteDays * costPerMin
-      const netGap = ptCosts.totalMonthly - carCosts.totalCommuteMonthly + timeSavingsValue
+      const netGap = ptCosts.totalMonthly - carCosts.totalMonthly + timeSavingsValue
 
       points.push({
         salary: salary / 1000,

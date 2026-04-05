@@ -27,8 +27,6 @@ export interface LifestyleInputs {
   // Work schedule
   workDaysPerMonth: number    // default 21
   wfhDaysPerMonth: number     // default 0
-  // Weekend mileage (excluded from comparison, shown for budgeting)
-  weekendMileageKm: number    // per month
   // Parking
   hdbSeasonParkingMonthly: number
   workplaceParkingMonthly: number
@@ -69,10 +67,8 @@ export interface CarCostBreakdown {
   roadTaxMonthly: number
   insuranceMonthly: number
   parkingMonthly: number
-  fuelCommuteMonthly: number      // commute fuel only (used in comparison)
-  fuelWeekendMonthly: number      // weekend fuel (budgeting only)
-  totalCommuteMonthly: number     // used in inequality comparison
-  totalOwnershipMonthly: number   // includes weekend fuel (for budgeting)
+  fuelCommuteMonthly: number
+  totalMonthly: number
 }
 
 export interface PTCostBreakdown {

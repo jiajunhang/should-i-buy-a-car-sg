@@ -17,7 +17,6 @@ export const DEFAULT_LIFESTYLE: LifestyleInputs = {
   commuteDistanceKm: 20,
   workDaysPerMonth: 21,
   wfhDaysPerMonth: 0,
-  weekendMileageKm: 100,
   hdbSeasonParkingMonthly: 110,
   workplaceParkingMonthly: 200,
   petrolPricePerL: 3.00,

@@ -15,18 +15,17 @@ const CAR_COST_COLORS = {
   insurance: '#eab308',
   parking: '#22c55e',
   fuelCommute: '#3b82f6',
-  fuelWeekend: '#93c5fd',
 }
 
 export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
   const stackedData = [
     {
-      name: 'Car (commute)',
+      name: 'Car',
       Depreciation: Math.round(carCosts.depreciationMonthly),
       'Road Tax': Math.round(carCosts.roadTaxMonthly),
       Insurance: Math.round(carCosts.insuranceMonthly),
       Parking: Math.round(carCosts.parkingMonthly),
-      'Fuel (commute)': Math.round(carCosts.fuelCommuteMonthly),
+      Fuel: Math.round(carCosts.fuelCommuteMonthly),
     },
     {
       name: 'Public Transport',
@@ -39,8 +38,7 @@ export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
     { name: 'Road Tax', value: Math.round(carCosts.roadTaxMonthly), color: CAR_COST_COLORS.roadTax },
     { name: 'Insurance', value: Math.round(carCosts.insuranceMonthly), color: CAR_COST_COLORS.insurance },
     { name: 'Parking', value: Math.round(carCosts.parkingMonthly), color: CAR_COST_COLORS.parking },
-    { name: 'Fuel (commute)', value: Math.round(carCosts.fuelCommuteMonthly), color: CAR_COST_COLORS.fuelCommute },
-    { name: 'Fuel (weekend)', value: Math.round(carCosts.fuelWeekendMonthly), color: CAR_COST_COLORS.fuelWeekend },
+    { name: 'Fuel', value: Math.round(carCosts.fuelCommuteMonthly), color: CAR_COST_COLORS.fuelCommute },
   ]
     .filter(item => item.value > 0)
     .sort((a, b) => b.value - a.value)
@@ -68,18 +66,9 @@ export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-          <div className="mt-4 flex flex-col gap-1 text-sm text-center">
-            <p>
-              Commute costs: <span className="font-semibold text-foreground">{formatCurrency(carCosts.totalCommuteMonthly)}/mo</span>
-              <span className="text-muted-foreground text-xs ml-1">(used in comparison)</span>
-            </p>
-            {carCosts.fuelWeekendMonthly > 0 && (
-              <p className="text-muted-foreground text-xs">
-                + Weekend fuel: {formatCurrency(carCosts.fuelWeekendMonthly)}/mo
-                = Total ownership: {formatCurrency(carCosts.totalOwnershipMonthly)}/mo
-              </p>
-            )}
-          </div>
+          <p className="mt-4 text-sm text-center">
+            Total: <span className="font-semibold text-foreground">{formatCurrency(carCosts.totalMonthly)}/mo</span>
+          </p>
         </CardContent>
       </Card>
 
@@ -102,7 +91,7 @@ export function CostBreakdownChart({ carCosts, ptCosts }: Props) {
               <Bar dataKey="Road Tax" stackId="a" fill={CAR_COST_COLORS.roadTax} />
               <Bar dataKey="Insurance" stackId="a" fill={CAR_COST_COLORS.insurance} />
               <Bar dataKey="Parking" stackId="a" fill={CAR_COST_COLORS.parking} />
-              <Bar dataKey="Fuel (commute)" stackId="a" fill={CAR_COST_COLORS.fuelCommute} />
+              <Bar dataKey="Fuel" stackId="a" fill={CAR_COST_COLORS.fuelCommute} />
               <Bar dataKey="Transport" stackId="a" fill="#06b6d4" />
             </BarChart>
           </ResponsiveContainer>

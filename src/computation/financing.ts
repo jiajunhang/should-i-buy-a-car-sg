@@ -2,14 +2,27 @@ import type { CarInputs, FinancingInputs, FinancingComparison } from '@/types/sc
 import { getScrapValue } from '@/types/scenario'
 
 /**
- * Compute monthly loan repayment using standard amortisation formula.
+ * Compute monthly loan repayment using Singapore flat-rate interest.
+ *
+ * Singapore car loans use flat-rate interest: interest is calculated on the
+ * original principal for the full term, regardless of how much has been repaid.
+ *
+ *   Total interest = principal × flatRate × years
+ *   Monthly repayment = (principal + totalInterest) / tenureMonths
+ *
+ * This means the effective interest rate (EIR) is roughly double the flat rate,
+ * since you're paying interest on the full principal even as it reduces.
  */
-export function computeLoanRepaymentMonthly(principal: number, annualRatePct: number, tenureMonths: number): number {
+export function computeFlatRateInterest(principal: number, annualFlatRatePct: number, tenureMonths: number): number {
   if (principal <= 0 || tenureMonths <= 0) return 0
-  const monthlyRate = annualRatePct / 100 / 12
-  if (monthlyRate === 0) return principal / tenureMonths
-  return principal * (monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)) /
-    (Math.pow(1 + monthlyRate, tenureMonths) - 1)
+  const years = tenureMonths / 12
+  return principal * (annualFlatRatePct / 100) * years
+}
+
+export function computeLoanRepaymentMonthly(principal: number, annualFlatRatePct: number, tenureMonths: number): number {
+  if (principal <= 0 || tenureMonths <= 0) return 0
+  const totalInterest = computeFlatRateInterest(principal, annualFlatRatePct, tenureMonths)
+  return (principal + totalInterest) / tenureMonths
 }
 
 /**
@@ -37,14 +50,16 @@ export function computeFinancingComparison(
   // Loan scenario
   const loanUpfront = financing.loanDownPayment
   const loanPrincipal = Math.max(0, car.purchasePrice - financing.loanDownPayment)
+  const loanTotalInterest = computeFlatRateInterest(
+    loanPrincipal,
+    financing.loanInterestRatePct,
+    financing.loanTenureMonths
+  )
   const loanMonthlyRepayment = computeLoanRepaymentMonthly(
     loanPrincipal,
     financing.loanInterestRatePct,
     financing.loanTenureMonths
   )
-  const loanTotalInterest = financing.loanTenureMonths > 0
-    ? (loanMonthlyRepayment * financing.loanTenureMonths) - loanPrincipal
-    : 0
   const loanInterestCostMonthly = financing.loanTenureMonths > 0
     ? loanTotalInterest / financing.loanTenureMonths
     : 0

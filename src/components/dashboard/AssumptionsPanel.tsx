@@ -65,7 +65,6 @@ export function AssumptionsPanel({ scenario }: Props) {
             <Field label="Driving Distance (one-way)" value={`${lifestyle.commuteDistanceKm} km`} />
             <Field label="Work Days" value={`${lifestyle.workDaysPerMonth}/mo`} />
             <Field label="WFH Days" value={`${lifestyle.wfhDaysPerMonth}/mo`} />
-            <Field label="Weekend Mileage" value={`${lifestyle.weekendMileageKm} km`} />
             <Field label="HDB Parking" value={`${formatCurrency(lifestyle.hdbSeasonParkingMonthly)}/mo`} />
             <Field label="Work Parking" value={`${formatCurrency(lifestyle.workplaceParkingMonthly)}/mo`} />
             <Field label="Petrol" value={`$${lifestyle.petrolPricePerL.toFixed(2)}/L`} />
