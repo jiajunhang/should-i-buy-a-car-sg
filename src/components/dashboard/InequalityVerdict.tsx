@@ -193,9 +193,21 @@ export function InequalityVerdict({ analysis }: Props) {
             </div>
 
             {/* Intangibles note — shown when there's a net premium */}
-            {netPremium > 0 && (
+            {netPremium >= 0 && (
               <p className="text-xs text-muted-foreground border-t pt-3">
-                This {formatCurrency(netPremium)}/mo is what you'd pay for convenience, on-demand travel, driving enjoyment, and easily visiting family — things that can't be easily quantified. If those are worth it to you, the car can still be justified.
+                This <b>{formatCurrency(netPremium)}/mo</b> is the premium you'd pay for convenience, on-demand travel, driving enjoyment — things that can't be easily quantified. 
+                <br></br>
+                <br></br>
+                Are the intangible benefits worth paying extra <b>{formatCurrency(netPremium)}/mo of net premium</b> to you? If so, the car can still be justified.
+              </p>
+            )}
+
+            {netPremium < 0 && (
+              <p className="text-xs text-muted-foreground border-t pt-3">
+                Great! After accounting for the time value saved, you are actually saving <b>{formatCurrency(-1 * netPremium)}/mo</b> by choosing to drive over taking public transport.
+                <br></br>
+                <br></br>
+                 Barring other hidden and unexpected costs (e.g. accidents, maintenance), buying the car can be justified.
               </p>
             )}
           </div>

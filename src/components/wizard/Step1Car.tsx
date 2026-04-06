@@ -95,7 +95,7 @@ export function Step1Car({ scenario }: Props) {
             className="underline text-primary hover:text-primary/80"
           >
             sgCarMart
-          </a>.
+          </a>. 
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -103,12 +103,12 @@ export function Step1Car({ scenario }: Props) {
         <div className="rounded-lg border border-dashed bg-muted/30 p-3 space-y-2">
           <div className="flex items-center gap-1.5 text-sm font-medium">
             <Link2 className="h-4 w-4" />
-            Auto-fill from SGCarMart
+            Auto-fill from SGCarMart (used car listings only)
           </div>
           <div className="flex gap-2">
             <Input
               type="url"
-              placeholder="Paste a sgCarMart listing URL"
+              placeholder="Paste a sgCarMart listing listing URL."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleFetch() } }}

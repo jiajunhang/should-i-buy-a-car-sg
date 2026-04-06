@@ -69,7 +69,8 @@ export function InteractiveSliders({ scenario }: Props) {
           What if things change?
         </CardTitle>
         <CardDescription>
-          Drag the sliders to see how your verdict shifts.
+          Drag the sliders to explore different scenarios (e.g. more time saved driving, higher income) 
+          and see how it affects the premium you are paying for car ownership.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
@@ -85,7 +86,7 @@ export function InteractiveSliders({ scenario }: Props) {
         />
 
         <SliderControl
-          label={`Daily Driving Time (${savedLabel})`}
+          label={`Avg. Daily Driving Time (${savedLabel})`}
           value={driveTime}
           displayValue={`${driveTime} min`}
           onChange={(v) => updateLifestyle(id, { driveTimeMinutesDaily: v })}
@@ -96,7 +97,7 @@ export function InteractiveSliders({ scenario }: Props) {
         />
 
         <SliderControl
-          label="Daily Public Transport Time"
+          label="Avg. Daily Public Transport Time"
           value={ptTime}
           displayValue={`${ptTime} min`}
           onChange={(v) => updateLifestyle(id, { ptTimeMinutesDaily: v })}
