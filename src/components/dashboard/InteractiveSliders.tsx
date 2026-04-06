@@ -1,6 +1,6 @@
 import type { Scenario } from '@/types/scenario'
 import { useScenarioStore } from '@/store/scenarioStore'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
 import { formatCurrency } from '@/lib/utils'
 import { SlidersHorizontal, AlertTriangle } from 'lucide-react'
@@ -53,17 +53,24 @@ export function InteractiveSliders({ scenario }: Props) {
   const { updateCompensation, updateLifestyle } = useScenarioStore()
   const id = scenario.id
 
-  const actualMinutesSaved = scenario.lifestyle.ptTimeMinutesDaily - scenario.lifestyle.driveTimeMinutesDaily
-  const drivingIsSlower = actualMinutesSaved < 0
-  const sliderValue = Math.max(0, actualMinutesSaved)
+  const driveTime = scenario.lifestyle.driveTimeMinutesDaily
+  const ptTime = scenario.lifestyle.ptTimeMinutesDaily
+  const minutesSaved = ptTime - driveTime
+  const drivingIsSlower = minutesSaved < 0
+  const savedLabel = drivingIsSlower
+    ? `${Math.abs(minutesSaved)} min slower`
+    : `${minutesSaved} min saved`
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <SlidersHorizontal className="h-5 w-5" />
-          Explore Scenarios
+          What if things change?
         </CardTitle>
+        <CardDescription>
+          Drag the sliders to see how your verdict shifts.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
         <SliderControl
@@ -87,15 +94,23 @@ export function InteractiveSliders({ scenario }: Props) {
         )}
 
         <SliderControl
-          label="Minutes Saved Per Day (Driving vs Public Transport)"
-          value={sliderValue}
-          displayValue={`${sliderValue} min`}
-          onChange={(v) => {
-            const newDriveTime = Math.max(0, scenario.lifestyle.ptTimeMinutesDaily - v)
-            updateLifestyle(id, { driveTimeMinutesDaily: Math.round(newDriveTime) })
-          }}
+          label="Daily Driving Time"
+          value={driveTime}
+          displayValue={`${driveTime} min`}
+          onChange={(v) => updateLifestyle(id, { driveTimeMinutesDaily: v })}
           min={0}
-          max={120}
+          max={240}
+          step={1}
+          formatBound={(v) => `${v} min`}
+        />
+
+        <SliderControl
+          label={`Daily Public Transport Time (${savedLabel})`}
+          value={ptTime}
+          displayValue={`${ptTime} min`}
+          onChange={(v) => updateLifestyle(id, { ptTimeMinutesDaily: v })}
+          min={0}
+          max={240}
           step={1}
           formatBound={(v) => `${v} min`}
         />

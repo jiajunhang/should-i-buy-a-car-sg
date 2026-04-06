@@ -1,15 +1,31 @@
-import type { Scenario } from '@/types/scenario'
+import type { Scenario, LifestyleInputs } from '@/types/scenario'
 import { useScenarioStore } from '@/store/scenarioStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
 import { MapPin, Clock, Car, TrainFront } from 'lucide-react'
+import { CopyFromMenu } from './CopyFromMenu'
 
 interface Props {
   scenario: Scenario
 }
 
+const COMMUTE_FIELDS: (keyof LifestyleInputs)[] = [
+  'driveTimeMinutesDaily',
+  'ptTimeMinutesDaily',
+  'commuteDistanceKmDaily',
+  'commuteDaysPerMonth',
+  'ptDailyCost',
+]
+
+const RUNNING_COST_FIELDS: (keyof LifestyleInputs)[] = [
+  'residentialParkingMonthly',
+  'workplaceParkingMonthly',
+  'petrolPricePerL',
+  'electricityPricePerKwh',
+]
+
 export function Step2Life({ scenario }: Props) {
-  const { updateLifestyle } = useScenarioStore()
+  const { updateLifestyle, scenarios } = useScenarioStore()
   const { lifestyle } = scenario
   const id = scenario.id
 
@@ -18,18 +34,37 @@ export function Step2Life({ scenario }: Props) {
     updateLifestyle(id, { [field]: isNaN(value) ? 0 : value })
   }
 
+  function copyFieldsFrom(sourceId: string, fields: (keyof LifestyleInputs)[]) {
+    const src = scenarios.find(s => s.id === sourceId)
+    if (!src) return
+    const patch: Partial<LifestyleInputs> = {}
+    for (const f of fields) {
+      (patch as Record<string, unknown>)[f] = src.lifestyle[f]
+    }
+    updateLifestyle(id, patch)
+  }
+
   return (
     <div className="space-y-6">
       {/* Commute Inputs */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Commute
-          </CardTitle>
-          <CardDescription>
-            Enter your average daily commute times and distance. These are used to calculate costs and time value.
-          </CardDescription>
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1.5">
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Commute
+              </CardTitle>
+              <CardDescription>
+                Enter your average daily commute times and distance. These are used to calculate costs and time value.
+              </CardDescription>
+            </div>
+            <CopyFromMenu
+              currentScenarioId={id}
+              sectionLabel="commute"
+              onCopy={(sourceId) => copyFieldsFrom(sourceId, COMMUTE_FIELDS)}
+            />
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Driving sub-section */}
@@ -98,13 +133,22 @@ export function Step2Life({ scenario }: Props) {
       {/* Cost Inputs */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            Running Costs
-          </CardTitle>
-          <CardDescription>
-            Parking and fuel costs. Defaults are typical Singapore values.
-          </CardDescription>
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1.5">
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Running Costs
+              </CardTitle>
+              <CardDescription>
+                Parking and fuel costs. Defaults are typical Singapore values.
+              </CardDescription>
+            </div>
+            <CopyFromMenu
+              currentScenarioId={id}
+              sectionLabel="running costs"
+              onCopy={(sourceId) => copyFieldsFrom(sourceId, RUNNING_COST_FIELDS)}
+            />
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

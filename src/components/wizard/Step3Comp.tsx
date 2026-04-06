@@ -1,6 +1,7 @@
-import type { Scenario } from '@/types/scenario'
+import type { Scenario, CompensationInputs } from '@/types/scenario'
 import { getCoeMonthsRemaining } from '@/types/scenario'
 import { useScenarioStore } from '@/store/scenarioStore'
+import { CopyFromMenu } from './CopyFromMenu'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
 import { Input } from '@/components/ui/input'
@@ -66,9 +67,19 @@ function SliderWithValue({
 }
 
 export function Step3Comp({ scenario }: Props) {
-  const { updateCompensation, updateFinancing } = useScenarioStore()
+  const { updateCompensation, updateFinancing, scenarios } = useScenarioStore()
   const { compensation, financing, car } = scenario
   const id = scenario.id
+
+  function copyIncomeFrom(sourceId: string) {
+    const src = scenarios.find(s => s.id === sourceId)
+    if (!src) return
+    const patch: Partial<CompensationInputs> = {
+      annualTotalComp: src.compensation.annualTotalComp,
+      hoursWorkedPerDay: src.compensation.hoursWorkedPerDay,
+    }
+    updateCompensation(id, patch)
+  }
 
   const costPerMin = computeCostPerMinute(compensation)
   const costPerHour = computeCostPerHour(compensation)
@@ -80,13 +91,22 @@ export function Step3Comp({ scenario }: Props) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            Income
-          </CardTitle>
-          <CardDescription>
-            Your compensation powers the time-value calculation — the key insight most people miss when evaluating car ownership.
-          </CardDescription>
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1.5">
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Income
+              </CardTitle>
+              <CardDescription>
+                Your compensation powers the time-value calculation — the key insight most people miss when evaluating car ownership.
+              </CardDescription>
+            </div>
+            <CopyFromMenu
+              currentScenarioId={id}
+              sectionLabel="income"
+              onCopy={copyIncomeFrom}
+            />
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Salary: slider + editable input */}

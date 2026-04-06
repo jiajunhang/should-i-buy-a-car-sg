@@ -1,13 +1,31 @@
-import type { Scenario } from '@/types/scenario'
+import { useState } from 'react'
+import type { Scenario, CarInputs } from '@/types/scenario'
 import { getScrapValue, getCoeMonthsRemaining } from '@/types/scenario'
 import { useScenarioStore } from '@/store/scenarioStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
-import { Car, Info } from 'lucide-react'
+import { Car, Info, Link2, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { Tooltip } from '@/components/ui/tooltip'
+
+type FetchState =
+  | { kind: 'idle' }
+  | { kind: 'loading' }
+  | { kind: 'success'; missing: string[] }
+  | { kind: 'error'; message: string }
+
+const MISSING_LABELS: Record<string, string> = {
+  name: 'Car name',
+  purchasePrice: 'Purchase price',
+  annualDepreciation: 'Annual depreciation',
+  coeYears: 'COE remaining',
+  annualRoadTax: 'Road tax',
+  fuelType: 'Fuel type',
+}
 
 interface Props {
   scenario: Scenario
@@ -18,10 +36,44 @@ export function Step1Car({ scenario }: Props) {
   const { car } = scenario
   const id = scenario.id
 
+  const [url, setUrl] = useState('')
+  const [fetchState, setFetchState] = useState<FetchState>({ kind: 'idle' })
+
   function updateNumField(field: string, raw: string) {
     const value = raw === '' ? 0 : parseFloat(raw)
     const val = isNaN(value) ? 0 : value
     updateCar(id, { [field]: val })
+  }
+
+  async function handleFetch() {
+    const trimmed = url.trim()
+    if (!trimmed) return
+    if (!trimmed.startsWith('https://www.sgcarmart.com/used-cars/info/')) {
+      setFetchState({ kind: 'error', message: 'Please paste a SGCarMart used-car listing URL (https://www.sgcarmart.com/used-cars/info/...).' })
+      return
+    }
+    setFetchState({ kind: 'loading' })
+    try {
+      const res = await fetch(`/api/sgcarmart?url=${encodeURIComponent(trimmed)}`)
+      const body = await res.json()
+      if (!res.ok) {
+        setFetchState({ kind: 'error', message: body.error ?? `Request failed (${res.status}).` })
+        return
+      }
+      const d = body.data as Partial<Record<keyof CarInputs | 'coeYears' | 'coeMonths', unknown>>
+      const patch: Partial<CarInputs> = {}
+      if (typeof d.name === 'string') patch.name = d.name
+      if (typeof d.purchasePrice === 'number') patch.purchasePrice = d.purchasePrice
+      if (typeof d.annualDepreciation === 'number') patch.annualDepreciation = d.annualDepreciation
+      if (typeof d.coeYears === 'number') patch.coeYears = d.coeYears
+      if (typeof d.coeMonths === 'number') patch.coeMonths = d.coeMonths
+      if (typeof d.annualRoadTax === 'number') patch.annualRoadTax = d.annualRoadTax
+      if (d.fuelType === 'petrol' || d.fuelType === 'ev') patch.fuelType = d.fuelType
+      updateCar(id, patch)
+      setFetchState({ kind: 'success', missing: body.missing ?? [] })
+    } catch (e) {
+      setFetchState({ kind: 'error', message: 'Network error. Please try again or enter details manually.' })
+    }
   }
 
   const coeMonths = getCoeMonthsRemaining(car)
@@ -47,6 +99,61 @@ export function Step1Car({ scenario }: Props) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Auto-fetch from SGCarMart */}
+        <div className="rounded-lg border border-dashed bg-muted/30 p-3 space-y-2">
+          <div className="flex items-center gap-1.5 text-sm font-medium">
+            <Link2 className="h-4 w-4" />
+            Auto-fill from SGCarMart
+          </div>
+          <div className="flex gap-2">
+            <Input
+              type="url"
+              placeholder="Paste a sgCarMart listing URL"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleFetch() } }}
+              disabled={fetchState.kind === 'loading'}
+              className="flex-1 h-9 text-sm"
+            />
+            <Button
+              type="button"
+              onClick={handleFetch}
+              disabled={fetchState.kind === 'loading' || !url.trim()}
+              size="sm"
+            >
+              {fetchState.kind === 'loading' ? (
+                <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Fetching</>
+              ) : (
+                'Fetch'
+              )}
+            </Button>
+          </div>
+          {fetchState.kind === 'error' && (
+            <div className="flex items-start gap-2 text-xs text-hard-to-justify">
+              <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+              <span>{fetchState.message}</span>
+            </div>
+          )}
+          {fetchState.kind === 'success' && (
+            <div className="flex items-start gap-2 text-xs">
+              <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 text-primary" />
+              {fetchState.missing.length === 0 ? (
+                <span className="text-muted-foreground">All fields auto-filled. Please review below.</span>
+              ) : (
+                <span className="text-muted-foreground">
+                  Auto-filled. Please fill in manually:{' '}
+                  <span className="font-medium text-foreground">
+                    {fetchState.missing.map(k => MISSING_LABELS[k] ?? k).join(', ')}
+                  </span>
+                </span>
+              )}
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Fuel consumption, insurance, ERP, and maintenance are never listed — review those fields below.
+          </p>
+        </div>
+
         <FormField
           label="Car Name / Model"
           type="text"

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Step1Car } from './Step1Car'
 import { Step2Life } from './Step2Life'
 import { Step3Comp } from './Step3Comp'
-import { ChevronLeft, ChevronRight, BarChart3, Info } from 'lucide-react'
+import { ChevronLeft, ChevronRight, BarChart3 } from 'lucide-react'
 
 const STEPS = [
   { title: 'Car Details', component: Step1Car },
@@ -40,19 +40,13 @@ export function WizardFlow({ scenario }: Props) {
     <div className="max-w-3xl mx-auto">
       {/* Context intro — shown on first step only */}
       {currentStep === 0 && (
-        <div className="flex gap-3 rounded-lg border bg-muted/50 p-4 mb-6">
-          <Info className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-muted-foreground space-y-1">
-            <p className="font-medium text-foreground">How this tool works</p>
-            <p>
-              We'll collect details about the car you're considering, your daily commute, and your income.
-              The tool then calculates whether the time you save by driving — valued at your earning rate —
-              outweighs the full financial cost of car ownership compared to public transport.
-            </p>
-            <p>
-              Rough figures are fine if you don't have the exact value.
-            </p>
-          </div>
+        <div className="rounded-lg border bg-muted/50 p-4 mb-6 text-center">
+          <p className="text-base font-semibold text-foreground">Should you buy this car? Let's find out.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            <span className="font-medium">Car</span> → <span className="font-medium">You</span> → <span className="font-medium">Verdict</span>
+            <span className="mx-2">·</span>
+            rough figures are fine
+          </p>
         </div>
       )}
 
