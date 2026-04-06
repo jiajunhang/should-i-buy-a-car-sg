@@ -48,8 +48,8 @@ export function Step1Car({ scenario }: Props) {
   async function handleFetch() {
     const trimmed = url.trim()
     if (!trimmed) return
-    if (!trimmed.startsWith('https://www.sgcarmart.com/used-cars/info/')) {
-      setFetchState({ kind: 'error', message: 'Please paste a SGCarMart used-car listing URL (https://www.sgcarmart.com/used-cars/info/...).' })
+    if (!/^https:\/\/www\.sgcarmart\.com\/used-cars\/info\/[^/?#]*-\d{5,}(\/|\?|$)/.test(trimmed)) {
+      setFetchState({ kind: 'error', message: 'Please paste a full SGCarMart used-car listing URL (e.g. https://www.sgcarmart.com/used-cars/info/tesla-model-3-electric-1482969).' })
       return
     }
     setFetchState({ kind: 'loading' })
@@ -149,9 +149,6 @@ export function Step1Car({ scenario }: Props) {
               )}
             </div>
           )}
-          <p className="text-xs text-muted-foreground">
-            Fuel consumption, insurance, ERP, and maintenance are never listed — review those fields below.
-          </p>
         </div>
 
         <FormField
@@ -262,7 +259,32 @@ export function Step1Car({ scenario }: Props) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          label="Annual Road Tax"
+          tooltip="Found on sgCarMart listing page under 'Road Tax'. Or check LTA OneMotoring. Typical range: $500-$1,500/yr for most cars."
+          value={car.annualRoadTax}
+          onChange={(v) => updateNumField('annualRoadTax', v)}
+          prefix="$"
+          suffix="/yr"
+        />
+
+        {/* Manual-only section — these fields are never listed on sgCarMart. */}
+        <div
+          className={`rounded-lg border p-4 space-y-4 transition-colors ${
+            fetchState.kind === 'success'
+              ? 'border-primary/40 bg-primary/5'
+              : 'border-dashed bg-muted/20'
+          }`}
+        >
+          <div className="flex items-start gap-2">
+            <Info className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground">
+              {fetchState.kind === 'success'
+                ? 'These fields are never listed on sgCarMart — please review and adjust if you have better estimates. Defaults are loose Singapore averages.'
+                : 'These fields are never listed on sgCarMart. Defaults are loose Singapore averages — adjust if you have better estimates.'}
+            </p>
+          </div>
+
           {car.fuelType === 'petrol' ? (
             <FormField
               label="Fuel Consumption"
@@ -282,42 +304,34 @@ export function Step1Car({ scenario }: Props) {
               step={0.1}
             />
           )}
+
           <FormField
-            label="Annual Road Tax"
-            tooltip="Found on sgCarMart listing page under 'Road Tax'. Or check LTA OneMotoring. Typical range: $500-$1,500/yr for most cars."
-            value={car.annualRoadTax}
-            onChange={(v) => updateNumField('annualRoadTax', v)}
+            label="Annual Insurance"
+            tooltip="Varies by car model, driver age, and NCD. Get a quote from FWD, DirectAsia, or your insurer. New drivers without NCD typically pay $3k-$4k. Experienced drivers (50% NCD) may pay $1k-$2k."
+            value={car.annualInsurance}
+            onChange={(v) => updateNumField('annualInsurance', v)}
             prefix="$"
             suffix="/yr"
           />
-        </div>
 
-        <FormField
-          label="Annual Insurance"
-          tooltip="Varies by car model, driver age, and NCD. Get a quote from FWD, DirectAsia, or your insurer. New drivers without NCD typically pay $3k-$4k. Experienced drivers (50% NCD) may pay $1k-$2k."
-          value={car.annualInsurance}
-          onChange={(v) => updateNumField('annualInsurance', v)}
-          prefix="$"
-          suffix="/yr"
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            label="ERP / Cashcard"
-            tooltip="Monthly estimate for ERP charges and cashcard top-ups. Depends on your route — $30-$80/mo is typical."
-            value={car.erpCashcardMonthly}
-            onChange={(v) => updateNumField('erpCashcardMonthly', v)}
-            prefix="$"
-            suffix="/mo"
-          />
-          <FormField
-            label="Annual Maintenance"
-            tooltip="Yearly estimate for servicing, tyres, and misc repairs. Budget ~$1,000-$1,800/yr depending on car age and mileage."
-            value={car.annualMaintenance}
-            onChange={(v) => updateNumField('annualMaintenance', v)}
-            prefix="$"
-            suffix="/yr"
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              label="ERP / Cashcard"
+              tooltip="Monthly estimate for ERP charges and cashcard top-ups. Depends on your route — $30-$80/mo is typical."
+              value={car.erpCashcardMonthly}
+              onChange={(v) => updateNumField('erpCashcardMonthly', v)}
+              prefix="$"
+              suffix="/mo"
+            />
+            <FormField
+              label="Annual Maintenance"
+              tooltip="Yearly estimate for servicing, tyres, and misc repairs. Budget ~$1,000-$1,800/yr depending on car age and mileage."
+              value={car.annualMaintenance}
+              onChange={(v) => updateNumField('annualMaintenance', v)}
+              prefix="$"
+              suffix="/yr"
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

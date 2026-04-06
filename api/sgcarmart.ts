@@ -36,7 +36,9 @@ interface ParsedListing {
 
 type ParsedKey = keyof ParsedListing
 
-const URL_PREFIX = 'https://www.sgcarmart.com/used-cars/info/'
+// Must be a full listing URL with a trailing numeric listing id.
+// e.g. https://www.sgcarmart.com/used-cars/info/tesla-model-3-electric-1482969
+const URL_RE = /^https:\/\/www\.sgcarmart\.com\/used-cars\/info\/[^/?#]*-\d{5,}(\/|\?|$)/
 
 function toNumber(raw: string | null): number | null {
   if (!raw) return null
@@ -139,9 +141,9 @@ export default async function handler(req: Request): Promise<Response> {
   const { searchParams } = new URL(req.url)
   const target = searchParams.get('url')
 
-  if (!target || !target.startsWith(URL_PREFIX)) {
+  if (!target || !URL_RE.test(target)) {
     return Response.json(
-      { error: 'Invalid URL. Must be a SGCarMart used-car listing (https://www.sgcarmart.com/used-cars/info/...)' },
+      { error: 'Invalid URL. Paste a full SGCarMart used-car listing URL (e.g. https://www.sgcarmart.com/used-cars/info/tesla-model-3-electric-1482969).' },
       { status: 400 }
     )
   }
@@ -149,6 +151,7 @@ export default async function handler(req: Request): Promise<Response> {
   let html: string
   try {
     const upstream = await fetch(target, {
+      redirect: 'manual',
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -156,6 +159,14 @@ export default async function handler(req: Request): Promise<Response> {
         'Accept-Language': 'en-SG,en;q=0.9',
       },
     })
+    // A redirect typically means the listing id was invalid and SGCarMart
+    // is sending us to the listings index — treat as not-found.
+    if (upstream.status >= 300 && upstream.status < 400) {
+      return Response.json(
+        { error: 'That listing could not be found on SGCarMart. Please check the URL, or enter details manually.' },
+        { status: 404 }
+      )
+    }
     if (!upstream.ok) {
       return Response.json(
         { error: `SGCarMart returned ${upstream.status}. The listing may have been removed.` },
@@ -171,6 +182,15 @@ export default async function handler(req: Request): Promise<Response> {
   }
 
   const { data, missing, sold } = parseHtml(html)
+
+  // If nothing recognisable parsed, treat as failure rather than returning
+  // an all-null payload (e.g. SGCarMart responded with a different page).
+  if (!data.name && data.annualRoadTax == null && data.fuelType == null) {
+    return Response.json(
+      { error: 'Could not read that listing. Please check the URL, or enter details manually.' },
+      { status: 422 }
+    )
+  }
 
   if (sold) {
     return Response.json(

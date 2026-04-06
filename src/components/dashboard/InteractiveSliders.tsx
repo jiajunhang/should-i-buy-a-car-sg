@@ -3,7 +3,7 @@ import { useScenarioStore } from '@/store/scenarioStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
 import { formatCurrency } from '@/lib/utils'
-import { SlidersHorizontal, AlertTriangle } from 'lucide-react'
+import { SlidersHorizontal } from 'lucide-react'
 
 interface Props {
   scenario: Scenario
@@ -58,7 +58,7 @@ export function InteractiveSliders({ scenario }: Props) {
   const minutesSaved = ptTime - driveTime
   const drivingIsSlower = minutesSaved < 0
   const savedLabel = drivingIsSlower
-    ? `${Math.abs(minutesSaved)} min slower`
+    ? `${Math.abs(minutesSaved)} min slower — harder to justify on time value alone`
     : `${minutesSaved} min saved`
 
   return (
@@ -84,17 +84,8 @@ export function InteractiveSliders({ scenario }: Props) {
           formatBound={(v) => formatCurrency(v)}
         />
 
-        {drivingIsSlower && (
-          <div className="flex items-start gap-2 rounded-md bg-hard-to-justify/5 border border-hard-to-justify/30 p-3">
-            <AlertTriangle className="h-4 w-4 text-hard-to-justify flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-hard-to-justify">
-              Driving is slower than public transport for your commute — car ownership is harder to justify on time value alone.
-            </p>
-          </div>
-        )}
-
         <SliderControl
-          label="Daily Driving Time"
+          label={`Daily Driving Time (${savedLabel})`}
           value={driveTime}
           displayValue={`${driveTime} min`}
           onChange={(v) => updateLifestyle(id, { driveTimeMinutesDaily: v })}
@@ -105,7 +96,7 @@ export function InteractiveSliders({ scenario }: Props) {
         />
 
         <SliderControl
-          label={`Daily Public Transport Time (${savedLabel})`}
+          label="Daily Public Transport Time"
           value={ptTime}
           displayValue={`${ptTime} min`}
           onChange={(v) => updateLifestyle(id, { ptTimeMinutesDaily: v })}

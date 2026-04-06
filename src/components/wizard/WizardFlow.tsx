@@ -38,18 +38,6 @@ export function WizardFlow({ scenario }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Context intro — shown on first step only */}
-      {currentStep === 0 && (
-        <div className="rounded-lg border bg-muted/50 p-4 mb-6 text-center">
-          <p className="text-base font-semibold text-foreground">Should you buy this car? Let's find out.</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            <span className="font-medium">Car</span> → <span className="font-medium">You</span> → <span className="font-medium">Verdict</span>
-            <span className="mx-2">·</span>
-            rough figures are fine
-          </p>
-        </div>
-      )}
-
       {/* Step indicator */}
       <div className="flex items-center justify-center gap-2 mb-8">
         {STEPS.map((step, i) => (
